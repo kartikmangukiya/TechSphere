@@ -1,11 +1,4 @@
-import {
-  ArrowRight,
-  BookOpen,
-  Code2,
-  Layers3,
-  Mail,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, Mail, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,17 +35,6 @@ const featuredPosts = [
     readTime: "10 min read",
   },
 ];
-const categories = [
-  { name: "React", icon: Code2, description: "Modern frontend development" },
-  {
-    name: "Angular",
-    icon: Layers3,
-    description: "Enterprise web applications",
-  },
-  { name: "Node.js", icon: BookOpen, description: "Backend & API development" },
-  { name: "TypeScript", icon: Code2, description: "Type-safe JavaScript" },
-  { name: "AI", icon: Sparkles, description: "AI & modern technology" },
-];
 export const Home = () => {
   return (
     <main>
@@ -60,7 +42,7 @@ export const Home = () => {
       {/* Hero */}{" "}
       <section className="border-b">
         {" "}
-        <div className="container mx-auto px-4 py-20 md:py-28">
+        <div className="container mx-auto px-2 py-20 md:py-28">
           {" "}
           <div className="mx-auto max-w-4xl text-center">
             {" "}
@@ -130,7 +112,6 @@ export const Home = () => {
                 Featured Articles{" "}
               </h2>{" "}
               <p className="mt-2 text-muted-foreground">
-                {" "}
                 Hand-picked articles to help you grow as a developer.{" "}
               </p>{" "}
             </div>{" "}
@@ -146,13 +127,10 @@ export const Home = () => {
                 key={post.title}
                 className="group transition-shadow hover:shadow-md"
               >
-                {" "}
                 <div className="aspect-video rounded-t-xl bg-muted" />{" "}
                 <CardHeader>
-                  {" "}
                   <Badge className="w-fit">{post.category}</Badge>{" "}
                   <CardTitle className="mt-2 transition-colors group-hover:text-primary">
-                    {" "}
                     {post.title}{" "}
                   </CardTitle>{" "}
                   <CardDescription> {post.description} </CardDescription>{" "}
@@ -171,88 +149,20 @@ export const Home = () => {
       </section>{" "}
       {/* Categories */}{" "}
       <section className="border-y bg-muted/30 py-16 md:py-20">
-        {" "}
-        <div className="container mx-auto px-4">
-          {" "}
-          <div className="mx-auto mb-10 max-w-2xl text-center">
-            {" "}
-            <p className="text-sm font-medium text-primary"> EXPLORE </p>{" "}
-            <h2 className="mt-2 text-3xl font-bold tracking-tight">
-              {" "}
-              Explore by Category{" "}
-            </h2>{" "}
-            <p className="mt-2 text-muted-foreground">
-              {" "}
-              Find content based on the technologies you're learning.{" "}
-            </p>{" "}
-          </div>{" "}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {" "}
-            {categories.map((category) => {
-              const Icon = category.icon;
-              return (
-                <Card
-                  key={category.name}
-                  className="cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md"
-                >
-                  {" "}
-                  <CardContent className="p-6">
-                    {" "}
-                    <Icon className="mb-4 h-7 w-7 text-primary" />{" "}
-                    <h3 className="font-semibold"> {category.name} </h3>{" "}
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {" "}
-                      {category.description}{" "}
-                    </p>{" "}
-                  </CardContent>{" "}
-                </Card>
-              );
-            })}{" "}
-          </div>{" "}
-        </div>{" "}
+        <div className="container mx-auto px-4"></div>{" "}
       </section>{" "}
       {/* Latest Articles */}{" "}
       <section className="py-16 md:py-20">
-        {" "}
         <div className="container mx-auto px-4">
-          {" "}
           <div className="mb-10">
-            {" "}
             <p className="text-sm font-medium text-primary"> LATEST </p>{" "}
             <h2 className="mt-2 text-3xl font-bold tracking-tight">
-              {" "}
-              Latest Articles{" "}
-            </h2>{" "}
+              Latest Articles
+            </h2>
             <p className="mt-2 text-muted-foreground">
-              {" "}
               Fresh ideas, tutorials, and insights from the TechSphere
-              community.{" "}
+              community.
             </p>{" "}
-          </div>{" "}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {" "}
-            {featuredPosts.map((post, index) => (
-              <Card key={`${post.title}-${index}`}>
-                {" "}
-                <div className="aspect-video rounded-t-xl bg-muted" />{" "}
-                <CardHeader>
-                  {" "}
-                  <Badge variant="outline" className="w-fit">
-                    {" "}
-                    {post.category}{" "}
-                  </Badge>{" "}
-                  <CardTitle className="mt-2"> {post.title} </CardTitle>{" "}
-                  <CardDescription> {post.description} </CardDescription>{" "}
-                </CardHeader>{" "}
-                <CardContent>
-                  {" "}
-                  <Button variant="link" className="px-0">
-                    {" "}
-                    Read article <ArrowRight className="ml-2 h-4 w-4" />{" "}
-                  </Button>{" "}
-                </CardContent>{" "}
-              </Card>
-            ))}{" "}
           </div>{" "}
         </div>{" "}
       </section>{" "}
