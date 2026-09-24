@@ -1,7 +1,0 @@
-export const LoginForm = () => {
-  return (
-    <>
-      <h1>Login Form</h1>
-    </>
-  );
-};

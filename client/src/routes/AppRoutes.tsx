@@ -3,9 +3,9 @@ import { About } from "@/pages/About";
 import { Blogs } from "@/pages/Blogs";
 import { Categories } from "@/pages/Categories";
 import { Home } from "@/pages/Home";
-import { LoginForm } from "@/pages/LoginForm";
-import { RegisterForm } from "@/pages/RegisterForm";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { Login } from "@/pages/Login";
+import { Register } from "@/pages/Register";
 
 const router = createBrowserRouter([
   {
@@ -30,11 +30,11 @@ const router = createBrowserRouter([
       },
       {
         path: "signin",
-        element: <LoginForm />,
+        element: <Login />,
       },
       {
         path: "signup",
-        element: <RegisterForm />,
+        element: <Register />,
       },
     ],
   },
