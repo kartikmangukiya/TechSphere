@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { NavLink } from "react-router-dom";
 const featuredPosts = [
   {
     title: "Building Modern React Applications with TypeScript",
@@ -38,41 +39,43 @@ const featuredPosts = [
 export const Home = () => {
   return (
     <main>
-      {" "}
-      {/* Hero */}{" "}
+      {/* Hero */}
       <section className="border-b">
-        {" "}
         <div className="container mx-auto px-2 py-20 md:py-28">
-          {" "}
           <div className="mx-auto max-w-4xl text-center">
-            {" "}
             <Badge variant="secondary" className="mb-6">
-              {" "}
               <Sparkles className="mr-2 h-3.5 w-3.5" /> Explore the world of
               technology{" "}
             </Badge>{" "}
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              {" "}
               Learn. Build. <span className="text-primary">Innovate.</span>{" "}
             </h1>{" "}
             <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-              {" "}
               TechSphere is a developer-focused blog where you can discover
               practical insights about React, Angular, Node.js, TypeScript, AI,
               and modern web development.{" "}
             </p>{" "}
-            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-              {" "}
+            <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button size="lg">
-                {" "}
-                Explore Articles <ArrowRight className="ml-2 h-4 w-4" />{" "}
-              </Button>{" "}
+                <NavLink
+                  to="/blogs"
+                  className="inline-flex items-center whitespace-nowrap"
+                >
+                  Explore Articles
+                  <ArrowRight className="ml-2 h-4 w-4 shrink-0" />
+                </NavLink>
+              </Button>
+
               <Button size="lg" variant="outline">
-                {" "}
-                Start Writing{" "}
-              </Button>{" "}
-            </div>{" "}
-            {/* Stats */}{" "}
+                <NavLink
+                  to="/create-blog"
+                  className="inline-flex items-center whitespace-nowrap"
+                >
+                  Start Writing
+                </NavLink>
+              </Button>
+            </div>
+            {/* Stats */}
             <div className="mx-auto mt-14 grid max-w-2xl grid-cols-3 divide-x">
               {" "}
               <div>
