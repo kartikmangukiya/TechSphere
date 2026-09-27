@@ -6,6 +6,7 @@ import { Home } from "@/pages/Home";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Login } from "@/pages/Login";
 import { Register } from "@/pages/Register";
+import { CreateBlog } from "@/pages/CreateBlog";
 
 const router = createBrowserRouter([
   {
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
       {
         path: "signup",
         element: <Register />,
+      },
+      {
+        path: "create-blog",
+        element: <CreateBlog />,
       },
     ],
   },
