@@ -198,7 +198,6 @@ export const CreateBlog = () => {
 
               <div className="grid gap-6 sm:grid-cols-2">
                 {/* Category */}
-
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
 
@@ -208,16 +207,14 @@ export const CreateBlog = () => {
                     render={({ field, fieldState }) => (
                       <>
                         <Select
-                          value={field.value}
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                          }}
+                          value={field.value || ""}
+                          onValueChange={field.onChange}
                         >
-                          <SelectTrigger id="category">
+                          <SelectTrigger id="category" className="w-full">
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
 
-                          <SelectContent>
+                          <SelectContent className="w-(--radix-select-trigger-width) min-w-[320px]">
                             {categories.map((category) => (
                               <SelectItem
                                 key={category.value}
