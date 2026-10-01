@@ -1,5 +1,7 @@
 import express from "express";
 import { router as authRouter } from "./src/routes/auth.routes.js";
+
+import { router as blogRouter } from "./src/routes/blog.routes.js";
 import cookieParser from "cookie-parser";
 
 export const app = express();
@@ -13,6 +15,5 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/blogs");
-app.use("/api/v1/categories");
+app.use("/api/v1/blogs", blogRouter);
 // app.use("/api/v1/users");
