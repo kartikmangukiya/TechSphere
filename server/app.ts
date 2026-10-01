@@ -13,6 +13,6 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/v1/auth", authRouter);
-// app.use("/api/v1/blogs");
-// app.use("/api/v1/categories");
+app.use("/api/v1/blogs");
+app.use("/api/v1/categories");
 // app.use("/api/v1/users");
