@@ -137,7 +137,7 @@ export const logoutUser = asyncHandler(async (_req: Request, res: Response) => {
 
 export const getCurrentUser = asyncHandler(
   async (req: Request, res: Response) => {
-    const userId = req.user?.id;
+    const userId = req.user?.userId;
 
     if (!userId) {
       throw new ApiError(401, "Authentication required", {
