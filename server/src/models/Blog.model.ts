@@ -6,7 +6,6 @@ export interface IBlog extends Document {
   title: string;
   description: string;
   content: string;
-  category: Types.ObjectId;
   tags: string[];
   featuredImage: string | null;
   status: BlogStatus;
@@ -38,11 +37,6 @@ const blogSchema = new Schema<IBlog>(
       trim: true,
       minlength: [50, "Content must be at least 50 characters"],
     },
-    category: {
-      type: Schema.Types.ObjectId,
-      ref: "Category",
-      required: [true, "Blog category is required"],
-    },
     tags: {
       type: [String],
       default: [],
@@ -67,7 +61,6 @@ const blogSchema = new Schema<IBlog>(
 );
 
 blogSchema.index({ author: 1 });
-blogSchema.index({ category: 1 });
 blogSchema.index({ status: 1 });
 blogSchema.index({ createdAt: -1 });
 blogSchema.index({ title: "text", description: "text", content: "text" });

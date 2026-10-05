@@ -54,19 +54,13 @@ export const createBlog = asyncHandler(async (req: Request, res: Response) => {
     author: userId,
   });
 
-  const populatedBlog = await blog.populate([
-    {
-      path: "",
-      select: "name slug",
-    },
-    {
-      path: "author",
-      select: "name email",
-    },
-  ]);
+  const populatedBlog = await blog.populate({
+    path: "author",
+    select: "name email",
+  });
 
   return res.status(201).json(
-    apiResponse(populatedBlog, {
+    apiResponse(blog, {
       message: "Blog created successfully",
       statusCode: 201,
     }),
@@ -140,17 +134,10 @@ export const updateBlog = asyncHandler(async (req: Request, res: Response) => {
   }
 
   await blog.save();
-
-  const populatedBlog = await blog.populate([
-    {
-      path: "",
-      select: "name slug",
-    },
-    {
-      path: "author",
-      select: "name email",
-    },
-  ]);
+  const populatedBlog = await blog.populate({
+    path: "author",
+    select: "name email",
+  });
 
   return res.status(200).json(
     apiResponse(populatedBlog, {
@@ -212,6 +199,7 @@ export const getAllBlogs = asyncHandler(async (req: Request, res: Response) => {
     status: "published",
   };
 
+  // Search blogs
   if (search && typeof search === "string") {
     filter.$text = {
       $search: search,
@@ -221,12 +209,8 @@ export const getAllBlogs = asyncHandler(async (req: Request, res: Response) => {
   const [blogs, totalBlogs] = await Promise.all([
     Blog.find(filter)
       .populate({
-        path: "",
-        select: "name slug",
-      })
-      .populate({
         path: "author",
-        select: "name",
+        select: "name email",
       })
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -259,39 +243,36 @@ export const getAllBlogs = asyncHandler(async (req: Request, res: Response) => {
   );
 });
 
-/**
- * GET /api/v1/blogs/:id
- * Get a single published blog
- */
-export const getBlogById = asyncHandler(async (req: Request, res: Response) => {
-  const { id } = req.params;
+export const getBlogById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
 
-  if (typeof id !== "string" || !mongoose.Types.ObjectId.isValid(id)) {
-    throw new ApiError(400, "Invalid blog ID");
-  }
+    if (
+      typeof id !== "string" ||
+      !mongoose.Types.ObjectId.isValid(id)
+    ) {
+      throw new ApiError(400, "Invalid blog ID");
+    }
 
-  const blog = await Blog.findOne({
-    _id: id,
-    status: "published",
-  })
-    .populate({
-      path: "",
-      select: "name slug",
+    const blog = await Blog.findOne({
+      _id: id,
+      status: "published",
     })
-    .populate({
-      path: "author",
-      select: "name",
-    })
-    .lean();
+      .populate({
+        path: "author",
+        select: "name email",
+      })
+      .lean();
 
-  if (!blog) {
-    throw new ApiError(404, "Blog not found");
-  }
+    if (!blog) {
+      throw new ApiError(404, "Blog not found");
+    }
 
-  return res.status(200).json(
-    apiResponse(blog, {
-      message: "Blog fetched successfully",
-      statusCode: 200,
-    }),
-  );
-});
+    return res.status(200).json(
+      apiResponse(blog, {
+        message: "Blog fetched successfully",
+        statusCode: 200,
+      }),
+    );
+  },
+);

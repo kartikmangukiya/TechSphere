@@ -1,11 +1,11 @@
-import { v2 as cloudinary } from "cloudinary";
+import { cloudinary } from "../config/cloudinary.js";
 
 export const uploadToCloudinary = (
   buffer: Buffer,
   folder: string,
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
+    const stream = cloudinary.uploader.upload_stream(
       {
         folder,
         resource_type: "auto",
@@ -25,6 +25,6 @@ export const uploadToCloudinary = (
       },
     );
 
-    uploadStream.end(buffer);
+    stream.end(buffer);
   });
 };
