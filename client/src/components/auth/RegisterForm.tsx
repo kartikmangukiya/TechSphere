@@ -13,11 +13,23 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { registerUser } from "@/api/axios";
 
 const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .min(2, "Name must be at least 2 characters"),
+
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Enter a valid email address"),
+
+  password: z
+    .string()
+    .min(1, "Password is required")
+    .min(6, "Password must be at least 6 characters"),
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -41,8 +53,17 @@ export const RegisterForm = ({ open, onOpenChange }: RegisterFormProps) => {
     },
   });
 
-  function onSubmit(values: RegisterFormValues) {
-    console.log(values);
+  async function onSubmit(values: RegisterFormValues) {
+    try {
+      const data = await registerUser(values);
+
+      console.log("Registration successful:", data);
+
+      // Close dialog
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Registration failed:", error);
+    }
   }
 
   return (
@@ -96,7 +117,7 @@ export const RegisterForm = ({ open, onOpenChange }: RegisterFormProps) => {
             )}
           </div>
 
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full cursor-pointer">
             Create Account
           </Button>
         </form>
