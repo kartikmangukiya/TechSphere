@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,9 +14,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { loginUser } from "@/api/axios";
+import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const loginSchema = z.object({
-  email: z.string().email("Enter a valid email address"),
+  email: z.string().trim().email("Enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -26,14 +30,17 @@ interface LoginFormProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export const LoginForm = ({
-  open,
-  onOpenChange,
-}: LoginFormProps) => {
+export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const { setUser } = useAuth();
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    reset,
+    formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -42,23 +49,42 @@ export const LoginForm = ({
     },
   });
 
-  function onSubmit(values: LoginFormValues) {
-    console.log(values);
+  const onSubmit = async (values: LoginFormValues) => {
+    try {
+      const user = await loginUser(values);
 
-    // API call
+      // Immediately update the Navbar
+      setUser(user);
+
+      // Navigate after login
+      navigate("/");
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  };
+
+  function handleDialogChange(nextOpen: boolean) {
+    if (!nextOpen) {
+      setErrorMessage("");
+      reset();
+    }
+
+    onOpenChange(nextOpen);
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleDialogChange}>
+      {" "}
       <DialogContent>
+        {" "}
         <DialogHeader>
+          {" "}
           <DialogTitle>Welcome back</DialogTitle>
-
+          ```
           <DialogDescription>
-            Login to your TechSphere account.
+            Log in to your TechSphere account.
           </DialogDescription>
         </DialogHeader>
-
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Email */}
           <div className="space-y-2">
@@ -68,11 +94,13 @@ export const LoginForm = ({
               id="login-email"
               type="email"
               placeholder="john@example.com"
+              autoComplete="email"
+              aria-invalid={Boolean(errors.email)}
               {...register("email")}
             />
 
             {errors.email && (
-              <p className="text-sm text-destructive">
+              <p className="text-sm text-destructive" role="alert">
                 {errors.email.message}
               </p>
             )}
@@ -85,19 +113,33 @@ export const LoginForm = ({
             <Input
               id="login-password"
               type="password"
-              placeholder="••••••••"
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              aria-invalid={Boolean(errors.password)}
               {...register("password")}
             />
 
             {errors.password && (
-              <p className="text-sm text-destructive">
+              <p className="text-sm text-destructive" role="alert">
                 {errors.password.message}
               </p>
             )}
           </div>
 
-          <Button type="submit" className="w-full">
-            Login
+          {/* API Error */}
+          {errorMessage && (
+            <p className="text-sm text-destructive" role="alert">
+              {errorMessage}
+            </p>
+          )}
+
+          {/* Submit */}
+          <Button
+            type="submit"
+            className="w-full cursor-pointer"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Logging in..." : "Login"}
           </Button>
         </form>
       </DialogContent>

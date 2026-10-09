@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -16,20 +17,15 @@ import { Button } from "@/components/ui/button";
 import { registerUser } from "@/api/axios";
 
 const registerSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Name is required")
-    .min(2, "Name must be at least 2 characters"),
+  name: z.string().trim().min(2, "Name must be at least 2 characters"),
 
   email: z
     .string()
+    .trim()
     .min(1, "Email is required")
     .email("Enter a valid email address"),
 
-  password: z
-    .string()
-    .min(1, "Password is required")
-    .min(6, "Password must be at least 6 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -40,10 +36,13 @@ interface RegisterFormProps {
 }
 
 export const RegisterForm = ({ open, onOpenChange }: RegisterFormProps) => {
+  const [errorMessage, setErrorMessage] = useState("");
+
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    reset,
+    formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -54,71 +53,113 @@ export const RegisterForm = ({ open, onOpenChange }: RegisterFormProps) => {
   });
 
   async function onSubmit(values: RegisterFormValues) {
+    setErrorMessage("");
+
     try {
-      const data = await registerUser(values);
+      await registerUser(values);
 
-      console.log("Registration successful:", data);
-
-      // Close dialog
+      reset();
       onOpenChange(false);
-    } catch (error) {
-      console.error("Registration failed:", error);
+    } catch {
+      setErrorMessage(
+        "Registration failed. Please check your details and try again.",
+      );
     }
   }
 
+  function handleDialogChange(nextOpen: boolean) {
+    if (!nextOpen) {
+      reset();
+      setErrorMessage("");
+    }
+
+    onOpenChange(nextOpen);
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleDialogChange}>
+      {" "}
       <DialogContent>
+        {" "}
         <DialogHeader>
+          {" "}
           <DialogTitle>Create an account</DialogTitle>
-          <DialogDescription>Create your TechSphere account.</DialogDescription>
+          ```
+          <DialogDescription>
+            Create your TechSphere account and join our community.
+          </DialogDescription>
         </DialogHeader>
-
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          {/* Name */}
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="register-name">Name</Label>
 
-            <Input id="name" placeholder="John Doe" {...register("name")} />
+            <Input
+              id="register-name"
+              type="text"
+              placeholder="John Doe"
+              autoComplete="name"
+              aria-invalid={Boolean(errors.name)}
+              {...register("name")}
+            />
 
             {errors.name && (
-              <p className="text-sm text-destructive">{errors.name.message}</p>
+              <p className="text-sm text-destructive" role="alert">
+                {errors.name.message}
+              </p>
             )}
           </div>
 
+          {/* Email */}
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="register-email">Email</Label>
 
             <Input
-              id="email"
+              id="register-email"
               type="email"
               placeholder="john@example.com"
+              autoComplete="email"
+              aria-invalid={Boolean(errors.email)}
               {...register("email")}
             />
 
             {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
+              <p className="text-sm text-destructive" role="alert">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
+          {/* Password */}
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="register-password">Password</Label>
 
             <Input
-              id="password"
+              id="register-password"
               type="password"
-              placeholder="••••••••"
+              placeholder="Enter your password"
+              autoComplete="new-password"
+              aria-invalid={Boolean(errors.password)}
               {...register("password")}
             />
 
             {errors.password && (
-              <p className="text-sm text-destructive">
+              <p className="text-sm text-destructive" role="alert">
                 {errors.password.message}
               </p>
             )}
           </div>
 
-          <Button type="submit" className="w-full cursor-pointer">
-            Create Account
+          {/* API Error */}
+          {errorMessage && (
+            <p className="text-sm text-destructive" role="alert">
+              {errorMessage}
+            </p>
+          )}
+
+          {/* Submit */}
+          <Button type="submit" className="w-full cursor-pointer" disabled={isSubmitting}>
+            {isSubmitting ? "Creating account..." : "Create Account"}
           </Button>
         </form>
       </DialogContent>

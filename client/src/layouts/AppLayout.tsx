@@ -4,7 +4,6 @@ import { Header } from "./Header";
 
 export const AppLayout = () => {
   const Navigation = useNavigation();
-  console.log(Navigation);
 
   // if(Navigation.state == "loading") return <h1>Loading............</h1>
   if (Navigation.state == "loading") return <h1>Loading...</h1>;
