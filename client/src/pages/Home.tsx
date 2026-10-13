@@ -10,6 +10,10 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
+
 const featuredPosts = [
   {
     title: "Building Modern React Applications with TypeScript",
@@ -37,6 +41,20 @@ const featuredPosts = [
   },
 ];
 export const Home = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  const handleStartWriting = () => {
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
+      toast.warning("Please log in to create a blog.");
+      navigate("/signin");
+      return;
+    }
+
+    navigate("/create-blog");
+  };
   return (
     <main>
       {/* Hero */}
@@ -66,13 +84,8 @@ export const Home = () => {
                 </NavLink>
               </Button>
 
-              <Button size="lg" variant="outline">
-                <NavLink
-                  to="/create-blog"
-                  className="inline-flex items-center whitespace-nowrap"
-                >
-                  Start Writing
-                </NavLink>
+              <Button className="cursor-pointer " size="lg" variant="outline" onClick={handleStartWriting}>
+                Start Writing
               </Button>
             </div>
             {/* Stats */}

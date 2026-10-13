@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
-  SelectItem,
+  SelectItem, 
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -18,7 +18,7 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
+  CardDescription, 
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -58,45 +58,6 @@ const createBlogSchema = z.object({
 // ------------------------------------
 
 type CreateBlogFormValues = z.infer<typeof createBlogSchema>;
-
-// ------------------------------------
-// Categories
-// ------------------------------------
-
-const categories = [
-  {
-    value: "programming-languages",
-    label: "Programming Languages",
-  },
-  {
-    value: "database",
-    label: "Database",
-  },
-  {
-    value: "ai-machine-learning",
-    label: "AI & Machine Learning",
-  },
-  {
-    value: "devops-cloud",
-    label: "DevOps & Cloud",
-  },
-  {
-    value: "tools-productivity",
-    label: "Tools & Productivity",
-  },
-  {
-    value: "cybersecurity",
-    label: "Cybersecurity",
-  },
-  {
-    value: "product-development",
-    label: "Product Development",
-  },
-  {
-    value: "data-structures-algorithms",
-    label: "Data Structures & Algorithms",
-  },
-];
 
 // ------------------------------------
 // Component
@@ -192,85 +153,41 @@ export const CreateBlog = () => {
                 )}
               </div>
 
-              {/* -------------------------------- */}
-              {/* Category + Status */}
-              {/* -------------------------------- */}
+              {/* Status */}
 
-              <div className="grid gap-6 sm:grid-cols-2">
-                {/* Category */}
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status</Label>
 
-                  <Controller
-                    name="category"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <>
-                        <Select
-                          value={field.value || ""}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger id="category" className="w-full">
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
+                <Controller
+                  name="status"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <>
+                      <Select
+                        value={field.value}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                        }}
+                      >
+                        <SelectTrigger id="status">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
 
-                          <SelectContent className="w-(--radix-select-trigger-width) min-w-[320px]">
-                            {categories.map((category) => (
-                              <SelectItem
-                                key={category.value}
-                                value={category.value}
-                              >
-                                {category.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <SelectContent>
+                          <SelectItem value="draft">Draft</SelectItem>
 
-                        {fieldState.error && (
-                          <p className="text-sm text-destructive">
-                            {fieldState.error.message}
-                          </p>
-                        )}
-                      </>
-                    )}
-                  />
-                </div>
-                {/* Status */}
+                          <SelectItem value="published">Published</SelectItem>
+                        </SelectContent>
+                      </Select>
 
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-
-                  <Controller
-                    name="status"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <>
-                        <Select
-                          value={field.value}
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                          }}
-                        >
-                          <SelectTrigger id="status">
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-
-                          <SelectContent>
-                            <SelectItem value="draft">Draft</SelectItem>
-
-                            <SelectItem value="published">Published</SelectItem>
-                          </SelectContent>
-                        </Select>
-
-                        {fieldState.error && (
-                          <p className="text-sm text-destructive">
-                            {fieldState.error.message}
-                          </p>
-                        )}
-                      </>
-                    )}
-                  />
-                </div>
+                      {fieldState.error && (
+                        <p className="text-sm text-destructive">
+                          {fieldState.error.message}
+                        </p>
+                      )}
+                    </>
+                  )}
+                />
               </div>
 
               {/* -------------------------------- */}

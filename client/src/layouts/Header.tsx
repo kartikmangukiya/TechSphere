@@ -50,8 +50,9 @@ export function Header() {
               variant="outline"
               onClick={handleLogout}
               disabled={isLoggingOut}
+              className="cursor-pointer"
             >
-              <LogOut className="mr-2 h-4 w-4 cursor-pointer" />
+              <LogOut className="mr-2 h-4 w-4" />
               {isLoggingOut ? "Logging out..." : "Logout"}
             </Button>
           </>
