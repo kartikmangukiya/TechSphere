@@ -1,9 +1,18 @@
 import { useState } from "react";
-import { Menu, LogOut, UserRound } from "lucide-react";
+import { Menu, LogOut, LayoutDashboard, ChevronDown } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
 import { useAuth } from "@/context/AuthContext";
 import { logoutUser } from "@/api/axios";
 
@@ -21,6 +30,8 @@ export function Header() {
   const [logoutError, setLogoutError] = useState("");
 
   async function handleLogout() {
+    if (isLoggingOut) return;
+
     setIsLoggingOut(true);
     setLogoutError("");
 
@@ -35,27 +46,86 @@ export function Header() {
     }
   }
 
+  const userInitials =
+    user?.name
+      ?.trim()
+      .split(/\s+/)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "U";
+
+  const profileMenu = user ? (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            className="flex h-auto items-center gap-2 rounded-full px-2 py-1.5"
+            aria-label="Open profile menu"
+          />
+        }
+      >
+        <Avatar className="h-9 w-9">
+          <AvatarFallback>{userInitials}</AvatarFallback>
+        </Avatar>
+
+        <span className="max-w-32 truncate text-sm font-medium">
+          {user.name}
+        </span>
+
+        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="end" className="w-56">
+        {/* User Information */}
+        <div className="flex items-center gap-3 p-3">
+          <Avatar className="h-10 w-10">
+            <AvatarFallback>{userInitials}</AvatarFallback>
+          </Avatar>
+
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold">{user.name}</p>
+
+            {user.email && (
+              <p className="truncate text-xs text-muted-foreground">
+                {user.email}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <DropdownMenuSeparator />
+
+        {/* Dashboard */}
+        <DropdownMenuItem
+          onClick={() => navigate("/dashboard")}
+          className="cursor-pointer"
+        >
+          <LayoutDashboard className="mr-2 h-4 w-4" />
+          Dashboard
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
+        {/* Logout */}
+        <DropdownMenuItem
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className="cursor-pointer text-destructive focus:text-destructive"
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          {isLoggingOut ? "Logging out..." : "Logout"}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  ) : null;
+
   const authActions = (
     <>
       {!isLoading &&
         (user ? (
-          <>
-            {" "}
-            <span className="flex items-center gap-2 text-sm font-medium">
-              {" "}
-              <UserRound className="h-4 w-4" />
-              Welcome, {user.name}{" "}
-            </span>
-            <Button
-              variant="outline"
-              onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="cursor-pointer"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              {isLoggingOut ? "Logging out..." : "Logout"}
-            </Button>
-          </>
+          profileMenu
         ) : (
           <>
             <NavLink
@@ -78,12 +148,12 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-      {" "}
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Logo */}{" "}
+        {/* Logo */}
         <NavLink to="/" className="shrink-0 text-2xl font-bold tracking-tight">
-          Tech<span className="text-primary">Sphere</span>{" "}
+          Tech<span className="text-primary">Sphere</span>
         </NavLink>
+
         {/* Desktop Navigation */}
         <nav className="hidden items-center gap-8 md:flex">
           {navLinks.map((link) => (
@@ -103,8 +173,10 @@ export function Header() {
             </NavLink>
           ))}
         </nav>
-        {/* Desktop Actions */}
+
+        {/* Desktop Authentication Actions */}
         <div className="hidden items-center gap-3 md:flex">{authActions}</div>
+
         {/* Mobile Menu */}
         <div className="md:hidden">
           <Sheet>
@@ -161,7 +233,8 @@ export function Header() {
           </Sheet>
         </div>
       </div>
-      {/* Desktop logout error */}
+
+      {/* Desktop Logout Error */}
       {logoutError && (
         <p
           className="mx-auto max-w-7xl px-4 pb-2 text-sm text-destructive"

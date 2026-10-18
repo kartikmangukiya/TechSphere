@@ -80,7 +80,6 @@ export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
         <DialogHeader>
           {" "}
           <DialogTitle>Welcome back</DialogTitle>
-          ```
           <DialogDescription>
             Log in to your TechSphere account.
           </DialogDescription>

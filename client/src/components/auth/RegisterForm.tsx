@@ -84,7 +84,7 @@ export const RegisterForm = ({ open, onOpenChange }: RegisterFormProps) => {
         <DialogHeader>
           {" "}
           <DialogTitle>Create an account</DialogTitle>
-          ```
+      
           <DialogDescription>
             Create your TechSphere account and join our community.
           </DialogDescription>
