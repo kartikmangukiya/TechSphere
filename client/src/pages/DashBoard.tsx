@@ -1,27 +1,22 @@
 import {
   FileText,
-  Eye,
   PenLine,
   Plus,
-  ArrowRight,
+  Camera,
+  Mail,
+  Pencil,
   Clock,
   CheckCircle2,
   FileEdit,
   BookOpen,
-  TrendingUp,
   MoreHorizontal,
+  UserRound,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,31 +24,37 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/context/AuthContext";
+import { useRef, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const stats = [
   {
-    title: "Total Articles",
-    value: "12",
+    title: "Total Blogs",
+    value: "0",
     description: "All your articles",
     icon: FileText,
   },
   {
     title: "Published",
-    value: "8",
+    value: "0",
     description: "Available to readers",
     icon: CheckCircle2,
   },
   {
     title: "Drafts",
-    value: "4",
+    value: "0",
     description: "Work in progress",
     icon: FileEdit,
-  },
-  {
-    title: "Total Views",
-    value: "2,450",
-    description: "Across all articles",
-    icon: Eye,
   },
 ];
 
@@ -61,48 +62,81 @@ const recentArticles = [
   {
     id: "1",
     title: "Building Modern React Applications with TypeScript",
-    category: "React",
     status: "published",
     updatedAt: "Oct 16, 2026",
-    views: 840,
   },
   {
     id: "2",
     title: "Understanding Angular Signals",
-    category: "Angular",
     status: "published",
     updatedAt: "Oct 14, 2026",
-    views: 625,
   },
   {
     id: "3",
     title: "Building REST APIs with Node.js",
-    category: "Node.js",
     status: "draft",
     updatedAt: "Oct 12, 2026",
-    views: 0,
   },
   {
     id: "4",
     title: "Getting Started with TypeScript",
-    category: "TypeScript",
     status: "published",
     updatedAt: "Oct 10, 2026",
-    views: 985,
   },
 ];
 
 export const Dashboard = () => {
   const { user } = useAuth();
 
-  const userInitials =
-    user?.name
-      ?.trim()
-      .split(/\s+/)
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() || "U";
+  const navigate = useNavigate();
+
+  const [isViewProfileOpen, setIsViewProfileOpen] = useState(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+
+  const [name, setName] = useState(user?.name ?? "");
+  const [email, setEmail] = useState(user?.email ?? "");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const userInitials = (name || user?.name || "Developer")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("");
+
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      event.target.value = "";
+      return;
+    }
+
+    // Limit the image to 5 MB.
+    if (file.size > 5 * 1024 * 1024) {
+      event.target.value = "";
+      return;
+    }
+
+    const imageUrl = URL.createObjectURL(file);
+    setProfileImage((previousImage) => {
+      if (previousImage) URL.revokeObjectURL(previousImage);
+      return imageUrl;
+    });
+  };
+
+  const handleSaveProfile = () => {
+    // Updates the local preview only.
+    // Connect this handler to your profile-update API to save changes permanently.
+    setIsEditProfileOpen(false);
+  };
+
+  const displayedName = name || user?.name || "Developer";
+  const displayedEmail = email || user?.email || "";
 
   return (
     <main className="min-h-screen bg-muted/30">
@@ -110,66 +144,235 @@ export const Dashboard = () => {
         {/* Welcome Section */}
         <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
           <div>
-            <p className="text-sm font-medium text-primary">
-              USER DASHBOARD
-            </p>
-
             <h1 className="mt-2 text-3xl font-bold tracking-tight">
               Welcome back, {user?.name?.split(" ")[0] || "Developer"}!
             </h1>
 
             <p className="mt-2 text-muted-foreground">
-              Manage your articles, track performance, and share your
+              Manage your blog articals, track performance, and share your
               knowledge with the TechSphere community.
             </p>
           </div>
 
-          <Button asChild className="shrink-0">
-            <NavLink to="/create-blog">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Article
-            </NavLink>
+          <Button
+            className="shrink-0 cursor-pointer"
+            onClick={() => navigate("/create-blog")}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Create Article
           </Button>
         </section>
-
-        {/* Profile Summary */}
-        <Card>
-          <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/10 text-lg font-bold text-primary">
-              {userInitials}
+        <Card className="overflow-hidden">
+          <CardContent className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center">
+            {/* Profile Image */}
+            <div className="relative mx-auto sm:mx-0">
+              <Avatar className="h-20 w-20 border-2 border-border shadow-sm">
+                <AvatarImage
+                  src={profileImage ?? undefined}
+                  alt={displayedName}
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-primary/10 text-xl font-bold text-primary">
+                  {userInitials || "D"}
+                </AvatarFallback>
+              </Avatar>
             </div>
 
-            <div className="min-w-0 flex-1">
-              <h2 className="font-semibold">
-                {user?.name || "Developer"}
-              </h2>
+            {/* User Information */}
+            <div className="min-w-0 flex-1 text-center sm:text-left">
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+                <h2 className="truncate text-lg font-semibold">
+                  {displayedName}
+                </h2>
+              </div>
 
-              <p className="break-all text-sm text-muted-foreground">
-                {user?.email || "Welcome to TechSphere"}
+              <p className="mt-1 flex items-center justify-center gap-2 break-all text-sm text-muted-foreground sm:justify-start">
+                <Mail className="h-4 w-4 shrink-0" />
+                {displayedEmail || "Add your email"}
               </p>
 
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">
-                  <CheckCircle2 className="mr-1 h-3 w-3" />
-                  Member
-                </Badge>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Welcome to your TechSphere dashboard.
+              </p>
+            </div>
 
-                <span className="text-xs text-muted-foreground">
-                  TechSphere Community
-                </span>
+            {/* Action Buttons */}
+            <div className="flex shrink-0 flex-wrap justify-center gap-2 sm:justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setIsViewProfileOpen(true)}
+              >
+                <UserRound className="mr-2 h-4 w-4" />
+                View Profile
+              </Button>
+
+              <Button onClick={() => setIsEditProfileOpen(true)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit Profile
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        {/* View Profile Dialog */}
+        <Dialog open={isViewProfileOpen} onOpenChange={setIsViewProfileOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Your Profile</DialogTitle>
+              <DialogDescription>
+                View your TechSphere account information.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex flex-col items-center py-4">
+              <Avatar className="h-24 w-24 border">
+                <AvatarImage
+                  src={profileImage ?? undefined}
+                  alt={displayedName}
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-primary/10 text-2xl font-bold text-primary">
+                  {userInitials || "D"}
+                </AvatarFallback>
+              </Avatar>
+
+              <h3 className="mt-4 text-xl font-semibold">{displayedName}</h3>
+
+              <p className="mt-1 break-all text-sm text-muted-foreground">
+                {displayedEmail || "No email available"}
+              </p>
+            </div>
+
+            <div className="space-y-3 rounded-lg border p-4">
+              <div className="flex items-center gap-3">
+                <UserRound className="h-4 w-4 text-muted-foreground" />
+                <div>
+                  <p className="text-xs text-muted-foreground">Username</p>
+                  <p className="text-sm font-medium">{displayedName}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <div className="min-w-0">
+                  <p className="text-xs text-muted-foreground">Email Address</p>
+                  <p className="break-all text-sm font-medium">
+                    {displayedEmail || "Not provided"}
+                  </p>
+                </div>
               </div>
             </div>
 
-            <Button variant="outline" asChild>
-              <NavLink to="/blogs">
-                <BookOpen className="mr-2 h-4 w-4" />
-                Explore Blogs
-              </NavLink>
-            </Button>
-          </CardContent>
-        </Card>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsViewProfileOpen(false)}
+              >
+                Close
+              </Button>
 
-        {/* Statistics */}
+              <Button
+                onClick={() => {
+                  setIsViewProfileOpen(false);
+                  setIsEditProfileOpen(true);
+                }}
+              >
+                <Pencil className="mr-2 h-4 w-4" />
+                Edit Profile
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        {/* Edit Profile Dialog */}
+        <Dialog open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit Profile</DialogTitle>
+              <DialogDescription>
+                Update your display name, email, and profile picture.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-5 py-2">
+              {/* Upload Profile Picture */}
+              <div className="flex flex-col items-center">
+                <div className="relative">
+                  <Avatar className="h-24 w-24 border">
+                    <AvatarImage
+                      src={profileImage ?? undefined}
+                      alt={displayedName}
+                      className="object-cover"
+                    />
+                    <AvatarFallback className="bg-primary/10 text-2xl font-bold text-primary">
+                      {userInitials || "D"}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition hover:bg-primary/90"
+                    aria-label="Upload profile picture"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <p className="mt-3 text-sm font-medium">Profile Picture</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  JPG, PNG, or WebP · Maximum 5 MB
+                </p>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+              </div>
+
+              {/* Username */}
+              <div className="space-y-2">
+                <Label htmlFor="profile-name">Username</Label>
+                <Input
+                  id="profile-name"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="Enter your name"
+                  maxLength={50}
+                />
+              </div>
+
+              {/* Email */}
+              <div className="space-y-2">
+                <Label htmlFor="profile-email">Email Address</Label>
+                <Input
+                  id="profile-email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="Enter your email"
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsEditProfileOpen(false)}
+              >
+                Cancel
+              </Button>
+
+              <Button
+                onClick={handleSaveProfile}
+                disabled={!name.trim() || !email.trim()}
+              >
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <section>
           <div className="mb-4">
             <h2 className="text-xl font-semibold">Overview</h2>
@@ -178,7 +381,7 @@ export const Dashboard = () => {
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3">
             {stats.map((stat) => {
               const Icon = stat.icon;
 
@@ -195,9 +398,7 @@ export const Dashboard = () => {
                       </div>
                     </div>
 
-                    <p className="mt-4 text-3xl font-bold">
-                      {stat.value}
-                    </p>
+                    <p className="mt-4 text-3xl font-bold">{stat.value}</p>
 
                     <p className="mt-1 text-xs text-muted-foreground">
                       {stat.description}
@@ -208,203 +409,106 @@ export const Dashboard = () => {
             })}
           </div>
         </section>
-
         {/* Main Content */}
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="mx-auto grid w-full max-w-7xl gap-8">
           {/* Recent Articles */}
-          <section className="space-y-4 lg:col-span-2">
+
+          <section className="w-full space-y-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-xl font-semibold">
-                  My Articles
-                </h2>
+                <h2 className="text-xl font-semibold">My Articles</h2>
 
                 <p className="mt-1 text-sm text-muted-foreground">
                   Manage your recently updated content.
                 </p>
               </div>
-
-              <Button variant="ghost" size="sm" asChild>
-                <NavLink to="/my-blogs">
-                  View all
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </NavLink>
-              </Button>
             </div>
 
             <Card>
-              <CardContent className="divide-y p-0">
+              <CardContent className="grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3">
                 {recentArticles.map((article) => (
-                  <div
+                  <Card
                     key={article.id}
-                    className="flex items-start gap-3 p-4 sm:items-center sm:p-5"
+                    className="group overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
                   >
-                    <div className="mt-1 rounded-lg bg-muted p-2 sm:mt-0">
-                      <FileText className="h-5 w-5 text-muted-foreground" />
-                    </div>
+                    <CardContent className="p-0">
+                      {/* Blog Icon Area */}
+                      <div className="relative flex h-36 items-center justify-center bg-muted/60">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border bg-background shadow-sm transition-transform duration-200 group-hover:scale-105">
+                          <FileText className="h-8 w-8 text-primary" />
+                        </div>
 
-                    <div className="min-w-0 flex-1">
-                      <h3 className="line-clamp-2 text-sm font-medium">
-                        {article.title}
-                      </h3>
+                        {/* Status Badge */}
+                        <div className="absolute right-3 top-3">
+                          <Badge
+                            variant={
+                              article.status === "published"
+                                ? "default"
+                                : "secondary"
+                            }
+                          >
+                            {article.status === "published"
+                              ? "Published"
+                              : "Draft"}
+                          </Badge>
+                        </div>
 
-                      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                        <Badge variant="outline">
-                          {article.category}
-                        </Badge>
+                        {/* Actions Menu */}
+                        <div className="absolute left-3 top-3">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger
+                              render={
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 bg-background/80"
+                                  aria-label={`Actions for ${article.title}`}
+                                />
+                              }
+                            >
+                              <MoreHorizontal className="h-4 w-4" />
+                            </DropdownMenuTrigger>
 
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {article.updatedAt}
-                        </span>
+                            <DropdownMenuContent align="start">
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  // Add article edit navigation here.
+                                }}
+                              >
+                                <PenLine className="mr-2 h-4 w-4" />
+                                Edit article
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  // Add article details navigation here.
+                                }}
+                              >
+                                <BookOpen className="mr-2 h-4 w-4" />
+                                View article
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex shrink-0 flex-col items-end gap-2">
-                      <Badge
-                        variant={
-                          article.status === "published"
-                            ? "default"
-                            : "secondary"
-                        }
-                      >
-                        {article.status === "published"
-                          ? "Published"
-                          : "Draft"}
-                      </Badge>
+                      {/* Blog Details */}
+                      <div className="space-y-3 p-4">
+                        <h3 className="line-clamp-2 min-h-10 text-sm font-semibold leading-5 transition-colors group-hover:text-primary">
+                          {article.title}
+                        </h3>
 
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Eye className="h-3 w-3" />
-                        {article.views}
-                      </span>
-
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          render={
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              aria-label={`Actions for ${article.title}`}
-                            />
-                          }
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                        </DropdownMenuTrigger>
-
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              // Connect to your article editing route.
-                            }}
-                          >
-                            <PenLine className="mr-2 h-4 w-4" />
-                            Edit article
-                          </DropdownMenuItem>
-
-                          <DropdownMenuItem
-                            onClick={() => {
-                              // Connect to your article details route.
-                            }}
-                          >
-                            <BookOpen className="mr-2 h-4 w-4" />
-                            View article
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Clock className="h-3.5 w-3.5 shrink-0" />
+                          <span>{article.updatedAt}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 ))}
               </CardContent>
             </Card>
           </section>
-
-          {/* Quick Actions */}
-          <aside className="space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold">Quick Actions</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                What would you like to do today?
-              </p>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">
-                  Create something new
-                </CardTitle>
-
-                <CardDescription>
-                  Share your knowledge with other developers.
-                </CardDescription>
-              </CardHeader>
-
-              <CardContent className="space-y-3">
-                <Button className="w-full justify-start" asChild>
-                  <NavLink to="/create-blog">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Write an article
-                  </NavLink>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  asChild
-                >
-                  <NavLink to="/blogs">
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    Browse articles
-                  </NavLink>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  asChild
-                >
-                  <NavLink to="/about">
-                    <UserRound className="mr-2 h-4 w-4" />
-                    About TechSphere
-                  </NavLink>
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Writing Tip */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <div className="rounded-lg bg-primary/10 p-2">
-                    <TrendingUp className="h-4 w-4 text-primary" />
-                  </div>
-
-                  <CardTitle className="text-base">
-                    Writing Tip
-                  </CardTitle>
-                </div>
-              </CardHeader>
-
-              <CardContent>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  Great articles solve real problems. Use clear headings,
-                  practical examples, and code snippets to help readers
-                  learn faster.
-                </p>
-
-                <Button
-                  variant="link"
-                  className="mt-2 h-auto p-0"
-                  asChild
-                >
-                  <NavLink to="/create-blog">
-                    Start writing
-                    <ArrowRight className="ml-1 h-4 w-4" />
-                  </NavLink>
-                </Button>
-              </CardContent>
-            </Card>
-          </aside>
         </div>
       </div>
     </main>
