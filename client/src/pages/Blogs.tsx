@@ -4,4 +4,4 @@ export const Blogs = () => {
       <h1>Blogs</h1>
     </>
   );
-};
+}; 
