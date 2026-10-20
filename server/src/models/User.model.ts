@@ -1,6 +1,17 @@
-import { model, Schema } from "mongoose";
+import { model, Schema, type Document } from "mongoose";
 
-const userSchema = new Schema(
+export interface IUser {
+  name: string;
+  email: string;
+  password: string;
+  profileImage?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export type UserDocument = IUser & Document;
+
+const userSchema = new Schema<UserDocument>(
   {
     name: {
       type: String,
@@ -18,6 +29,10 @@ const userSchema = new Schema(
       type: String,
       required: true,
       minlength: 6,
+    },
+    profileImage: {
+      type: String,
+      default: "",
     },
   },
   {

@@ -70,7 +70,7 @@ export const createBlog = asyncHandler(async (req: Request, res: Response) => {
 
   const populatedBlog = await blog.populate({
     path: "author",
-    select: "name email",
+    select: "name email profileImage",
   });
 
   return res.status(201).json(
@@ -141,7 +141,7 @@ export const updateBlog = asyncHandler(async (req: Request, res: Response) => {
   await blog.save();
   const populatedBlog = await blog.populate({
     path: "author",
-    select: "name email",
+    select: "name email profileImage",
   });
 
   return res.status(200).json(
@@ -210,7 +210,7 @@ export const getAllBlogs = asyncHandler(async (req: Request, res: Response) => {
     Blog.find(filter)
       .populate({
         path: "author",
-        select: "name email",
+        select: "name email profileImage",
       })
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -244,23 +244,80 @@ export const getAllBlogs = asyncHandler(async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/v1/blogs/user/my-blogs
+ * Get all blogs created by the authenticated user with status filtering and stats
+ */
+export const getMyBlogs = asyncHandler(async (req: Request, res: Response) => {
+  const userId = getAuthenticatedUserId(req);
+  const { status, search } = req.query;
+
+  const filter: Record<string, unknown> = {
+    author: userId,
+  };
+
+  if (status && (status === "published" || status === "draft")) {
+    filter.status = status;
+  }
+
+  if (search && typeof search === "string" && search.trim()) {
+    filter.$or = [
+      { title: { $regex: search.trim(), $options: "i" } },
+      { description: { $regex: search.trim(), $options: "i" } },
+    ];
+  }
+
+  const [blogs, totalBlogs, publishedBlogs, draftBlogs] = await Promise.all([
+    Blog.find(filter).sort({ updatedAt: -1 }).lean(),
+    Blog.countDocuments({ author: userId }),
+    Blog.countDocuments({ author: userId, status: "published" }),
+    Blog.countDocuments({ author: userId, status: "draft" }),
+  ]);
+
+  return res.status(200).json(
+    apiResponse(
+      {
+        blogs,
+        stats: {
+          total: totalBlogs,
+          published: publishedBlogs,
+          drafts: draftBlogs,
+        },
+      },
+      {
+        message: "User blogs fetched successfully",
+        statusCode: 200,
+      },
+    ),
+  );
+});
+
+/**
  * GET /api/v1/blogs/:id
  * Get single blog by ID
  */
 export const getBlogById = asyncHandler(async (req: Request, res: Response) => {
   const id = validateObjectId(req.params.id, "blog ID");
 
-  const blog = await Blog.findOne({
-    _id: id,
-    status: "published",
-  })
+  const blog = await Blog.findById(id)
     .populate({
       path: "author",
-      select: "name email",
+      select: "name email profileImage",
     })
     .lean();
 
   if (!blog) {
+    throw new ApiError(404, "Blog not found", {
+      code: "BLOG_NOT_FOUND",
+    });
+  }
+
+  const currentUserId = req.user?.userId;
+  const isAuthor =
+    currentUserId &&
+    (blog.author?._id?.toString() === currentUserId ||
+      blog.author?.toString() === currentUserId);
+
+  if (blog.status === "draft" && !isAuthor) {
     throw new ApiError(404, "Blog not found", {
       code: "BLOG_NOT_FOUND",
     });
@@ -273,3 +330,4 @@ export const getBlogById = asyncHandler(async (req: Request, res: Response) => {
     }),
   );
 });
+

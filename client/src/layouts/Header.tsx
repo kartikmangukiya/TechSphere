@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 import { useAuth } from "@/context/AuthContext";
@@ -67,6 +67,7 @@ export function Header() {
         }
       >
         <Avatar className="h-9 w-9">
+          <AvatarImage src={user.profileImage || undefined} alt={user.name} />
           <AvatarFallback>{userInitials}</AvatarFallback>
         </Avatar>
 
@@ -81,6 +82,7 @@ export function Header() {
         {/* User Information */}
         <div className="flex items-center gap-3 p-3">
           <Avatar className="h-10 w-10">
+            <AvatarImage src={user.profileImage || undefined} alt={user.name} />
             <AvatarFallback>{userInitials}</AvatarFallback>
           </Avatar>
 

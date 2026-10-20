@@ -4,6 +4,7 @@ import {
   deleteBlog,
   getAllBlogs,
   getBlogById,
+  getMyBlogs,
   updateBlog,
 } from "../controllers/blog.controller.js";
 import {
@@ -26,7 +27,9 @@ export const router = Router();
 
 // Blog CRUD routes
 router.get("/", getAllBlogs);
-router.get("/:id", getBlogById);
+router.get("/user/my-blogs", authMiddleware, getMyBlogs);
+router.get("/:id", optionalAuthMiddleware, getBlogById);
+
 router.post(
   "/",
   authMiddleware,

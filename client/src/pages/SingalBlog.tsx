@@ -28,7 +28,6 @@ import {
 } from "@/api/axios";
 import type {
   Blog,
-  BlogComment,
   BlogCommentsResponse,
   BlogLikeSummary,
 } from "@/types/blog";

@@ -31,7 +31,7 @@ export const getBlogComments = asyncHandler(
 
     const [comments, total] = await Promise.all([
       Comment.find({ blog: blog._id })
-        .populate("author", "name email")
+        .populate("author", "name email profileImage")
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
@@ -104,7 +104,7 @@ export const createComment = asyncHandler(
     });
 
     const populatedComment = await Comment.findById(comment._id)
-      .populate("author", "name email")
+      .populate("author", "name email profileImage")
       .lean();
 
     return res.status(201).json(

@@ -8,6 +8,8 @@ import type {
   BlogLikeSummary,
   BlogListData,
   BlogStatus,
+  MyBlogsResponse,
+  UserBlogsStats,
 } from "@/types/blog";
 
 export const API = axios.create({
@@ -34,12 +36,15 @@ export type {
   BlogLikeSummary,
   BlogListData,
   BlogStatus,
+  MyBlogsResponse,
+  UserBlogsStats,
 };
 
 export interface AuthUser {
   id: string;
   name: string;
   email: string;
+  profileImage?: string;
   token?: string;
 }
 
@@ -90,6 +95,22 @@ export const getMe = async (): Promise<AuthUser> => {
   return response.data.data;
 };
 
+export const updateProfile = async (
+  data:
+    | FormData
+    | {
+        name?: string;
+        email?: string;
+        removeProfileImage?: boolean | string;
+      },
+): Promise<AuthUser> => {
+  const response = await API.patch<ApiResponse<AuthUser>>(
+    "/auth/profile",
+    data,
+  );
+  return response.data.data;
+};
+
 export const logoutUser = async () => {
   try {
     const response = await API.post("/auth/logout");
@@ -125,9 +146,47 @@ export const getAllBlogs = async (): Promise<Blog[]> => {
   return result.blogs;
 };
 
+export const getMyBlogs = async (
+  status?: "all" | "published" | "draft",
+  search?: string,
+): Promise<MyBlogsResponse> => {
+  const params: Record<string, string> = {};
+  if (status && status !== "all") {
+    params.status = status;
+  }
+  if (search && search.trim()) {
+    params.search = search.trim();
+  }
+
+  const response = await API.get<ApiResponse<MyBlogsResponse>>(
+    "/blogs/user/my-blogs",
+    { params },
+  );
+
+  return response.data.data;
+};
+
 export const getBlogById = async (id: string): Promise<Blog> => {
   const response = await API.get<ApiResponse<Blog>>(`/blogs/${id}`);
   return response.data.data;
+};
+
+export const updateBlog = async (
+  blogId: string,
+  formData: FormData | Partial<Blog>,
+): Promise<Blog> => {
+  const response = await API.patch<ApiResponse<Blog>>(
+    `/blogs/${blogId}`,
+    formData,
+  );
+  return response.data.data;
+};
+
+export const deleteBlog = async (
+  blogId: string,
+): Promise<{ deleted: boolean }> => {
+  await API.delete<ApiResponse<null>>(`/blogs/${blogId}`);
+  return { deleted: true };
 };
 
 // GET: Fetch likes and current user's like status

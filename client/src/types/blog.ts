@@ -5,6 +5,7 @@ export interface BlogAuthor {
   id?: string;
   name: string;
   email?: string;
+  profileImage?: string;
 }
 
 export interface Blog {
@@ -54,9 +55,21 @@ export interface BlogCommentsResponse {
   pagination: BlogCommentsPagination;
 }
 
+export interface UserBlogsStats {
+  total: number;
+  published: number;
+  drafts: number;
+}
+
+export interface MyBlogsResponse {
+  blogs: Blog[];
+  stats: UserBlogsStats;
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   statusCode?: number;
   message: string;
   data: T;
 }
+

@@ -6,6 +6,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { generateToken } from "../utils/generateToken.js";
+import { uploadToCloudinary } from "../utils/uploadToCloudinary.js";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -57,6 +58,7 @@ export const registerUser = asyncHandler(
           id: user._id.toString(),
           name: user.name,
           email: user.email,
+          profileImage: user.profileImage || "",
           token,
         },
         {
@@ -106,6 +108,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
         id: user._id.toString(),
         name: user.name,
         email: user.email,
+        profileImage: user.profileImage || "",
         token,
       },
       {
@@ -159,6 +162,7 @@ export const getCurrentUser = asyncHandler(
           id: user._id.toString(),
           name: user.name,
           email: user.email,
+          profileImage: user.profileImage || "",
         },
         {
           message: "Current user fetched successfully",
@@ -167,3 +171,75 @@ export const getCurrentUser = asyncHandler(
     );
   },
 );
+
+// =========================
+// Update User Profile
+// =========================
+export const updateProfile = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      throw new ApiError(401, "Authentication required", {
+        code: "UNAUTHORIZED",
+      });
+    }
+
+    const { name, email, removeProfileImage } = req.body;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new ApiError(404, "User not found", {
+        code: "USER_NOT_FOUND",
+      });
+    }
+
+    if (name && typeof name === "string" && name.trim()) {
+      user.name = name.trim();
+    }
+
+    if (email && typeof email === "string" && email.trim() && email.trim().toLowerCase() !== user.email) {
+      const existingUser = await User.findOne({
+        email: email.trim().toLowerCase(),
+        _id: { $ne: user._id },
+      });
+
+      if (existingUser) {
+        throw new ApiError(409, "Email is already taken by another account", {
+          code: "EMAIL_ALREADY_EXISTS",
+        });
+      }
+
+      user.email = email.trim().toLowerCase();
+    }
+
+    // Handle profile photo upload or removal
+    if (req.file) {
+      const uploadedUrl = await uploadToCloudinary(
+        req.file.buffer,
+        "techsphere/profiles",
+      );
+      user.profileImage = uploadedUrl;
+    } else if (removeProfileImage === "true" || removeProfileImage === true) {
+      user.profileImage = "";
+    }
+
+    await user.save();
+
+    return res.status(200).json(
+      apiResponse(
+        {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          profileImage: user.profileImage || "",
+        },
+        {
+          message: "Profile updated successfully",
+        },
+      ),
+    );
+  },
+);
+
