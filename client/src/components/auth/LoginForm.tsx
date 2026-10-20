@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { loginUser } from "@/api/axios";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { getErrorMessage } from "@/lib/formatters";
+
 
 const loginSchema = z.object({
   email: z.string().trim().email("Enter a valid email address"),
@@ -59,7 +61,7 @@ export const LoginForm = ({ open, onOpenChange }: LoginFormProps) => {
       // Navigate after login
       navigate("/");
     } catch (error) {
-      console.error("Login failed:", error);
+      setErrorMessage(getErrorMessage(error));
     }
   };
 

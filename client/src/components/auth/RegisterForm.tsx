@@ -15,6 +15,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { registerUser } from "@/api/axios";
+import { useAuth } from "@/context/AuthContext";
+import { getErrorMessage } from "@/lib/formatters";
+import { useNavigate } from "react-router-dom";
 
 const registerSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters"),
@@ -37,6 +40,8 @@ interface RegisterFormProps {
 
 export const RegisterForm = ({ open, onOpenChange }: RegisterFormProps) => {
   const [errorMessage, setErrorMessage] = useState("");
+  const { setUser } = useAuth();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -56,14 +61,14 @@ export const RegisterForm = ({ open, onOpenChange }: RegisterFormProps) => {
     setErrorMessage("");
 
     try {
-      await registerUser(values);
+      const user = await registerUser(values);
 
+      setUser(user);
       reset();
       onOpenChange(false);
-    } catch {
-      setErrorMessage(
-        "Registration failed. Please check your details and try again.",
-      );
+      navigate("/");
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error));
     }
   }
 

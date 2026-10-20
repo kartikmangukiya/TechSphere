@@ -7,10 +7,18 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { generateToken } from "../utils/generateToken.js";
 
+const isProduction = process.env.NODE_ENV === "production";
+
+const getCookieOptions = () => ({
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: (isProduction ? "none" : "lax") as "none" | "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
+
 // =========================
 // Register
 // =========================
-
 export const registerUser = asyncHandler(
   async (req: Request, res: Response) => {
     const { name, email, password } = req.body;
@@ -21,7 +29,9 @@ export const registerUser = asyncHandler(
       });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({
+      email: email.trim().toLowerCase(),
+    });
 
     if (existingUser) {
       throw new ApiError(409, "Email already exists", {
@@ -32,29 +42,26 @@ export const registerUser = asyncHandler(
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const user = await User.create({
-      name,
-      email,
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
       password: hashedPassword,
     });
 
     const token = generateToken(user._id.toString());
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie("token", token, getCookieOptions());
 
     return res.status(201).json(
       apiResponse(
         {
-          id: user._id,
+          id: user._id.toString(),
           name: user.name,
           email: user.email,
+          token,
         },
         {
           message: "User registered successfully",
+          statusCode: 201,
         },
       ),
     );
@@ -64,7 +71,6 @@ export const registerUser = asyncHandler(
 // =========================
 // Login
 // =========================
-
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
@@ -74,7 +80,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     });
   }
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: email.trim().toLowerCase() });
 
   if (!user) {
     throw new ApiError(401, "Invalid email or password", {
@@ -92,19 +98,15 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
   const token = generateToken(user._id.toString());
 
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+  res.cookie("token", token, getCookieOptions());
 
   return res.status(200).json(
     apiResponse(
       {
-        id: user._id,
+        id: user._id.toString(),
         name: user.name,
         email: user.email,
+        token,
       },
       {
         message: "Login successful",
@@ -116,12 +118,11 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 // =========================
 // Logout
 // =========================
-
 export const logoutUser = asyncHandler(async (_req: Request, res: Response) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
   });
 
   return res.status(200).json(
@@ -134,7 +135,6 @@ export const logoutUser = asyncHandler(async (_req: Request, res: Response) => {
 // =========================
 // Get Current User
 // =========================
-
 export const getCurrentUser = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user?.userId;
@@ -156,7 +156,7 @@ export const getCurrentUser = asyncHandler(
     return res.status(200).json(
       apiResponse(
         {
-          id: user._id,
+          id: user._id.toString(),
           name: user.name,
           email: user.email,
         },

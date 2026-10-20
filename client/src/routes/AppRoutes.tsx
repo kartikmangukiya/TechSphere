@@ -7,6 +7,7 @@ import { Login } from "@/pages/Login";
 import { Register } from "@/pages/Register";
 import { CreateBlog } from "@/pages/CreateBlog";
 import { Dashboard } from "@/pages/DashBoard";
+import { SingalBlog } from "@/pages/SingalBlog";
 
 const router = createBrowserRouter([
   {
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
       {
         path: "/blogs",
         element: <Blogs />,
+      },
+      {
+        path: "/blogs/:id",
+        element: <SingalBlog />,
       },
       {
         path: "about",
