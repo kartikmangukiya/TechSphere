@@ -35,6 +35,10 @@ const router = createBrowserRouter([
         element: <Login />,
       },
       {
+        path: "forgot-password",
+        element: <Login initialView="forgot-password" />,
+      },
+      {
         path: "signup",
         element: <Register />,
       },

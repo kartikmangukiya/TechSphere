@@ -90,6 +90,17 @@ export const loginUser = async (credentials: {
   return userData;
 };
 
+export const forgotPassword = async (data: {
+  email: string;
+  newPassword: string;
+}): Promise<{ email: string }> => {
+  const response = await API.post<ApiResponse<{ email: string }>>(
+    "/auth/forgot-password",
+    data,
+  );
+  return response.data.data;
+};
+
 export const getMe = async (): Promise<AuthUser> => {
   const response = await API.get<ApiResponse<AuthUser>>("/auth/me");
   return response.data.data;

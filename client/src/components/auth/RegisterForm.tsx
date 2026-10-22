@@ -2,6 +2,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff } from "lucide-react";
 
 import {
   Dialog,
@@ -17,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { registerUser } from "@/api/axios";
 import { useAuth } from "@/context/AuthContext";
 import { getErrorMessage } from "@/lib/formatters";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const registerSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters"),
@@ -40,6 +41,7 @@ interface RegisterFormProps {
 
 export const RegisterForm = ({ open, onOpenChange }: RegisterFormProps) => {
   const [errorMessage, setErrorMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const { setUser } = useAuth();
   const navigate = useNavigate();
 
@@ -139,14 +141,30 @@ export const RegisterForm = ({ open, onOpenChange }: RegisterFormProps) => {
           <div className="space-y-2">
             <Label htmlFor="register-password">Password</Label>
 
-            <Input
-              id="register-password"
-              type="password"
-              placeholder="Enter your password"
-              autoComplete="new-password"
-              aria-invalid={Boolean(errors.password)}
-              {...register("password")}
-            />
+            <div className="relative">
+              <Input
+                id="register-password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                autoComplete="new-password"
+                className="pr-10"
+                aria-invalid={Boolean(errors.password)}
+                {...register("password")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer focus:outline-none"
+                tabIndex={-1}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
 
             {errors.password && (
               <p className="text-sm text-destructive" role="alert">
@@ -157,15 +175,29 @@ export const RegisterForm = ({ open, onOpenChange }: RegisterFormProps) => {
 
           {/* API Error */}
           {errorMessage && (
-            <p className="text-sm text-destructive" role="alert">
-              {errorMessage}
-            </p>
+            <div className="rounded-md border border-destructive/20 bg-destructive/10 p-2.5">
+              <p className="text-sm text-destructive font-medium" role="alert">
+                {errorMessage}
+              </p>
+            </div>
           )}
 
           {/* Submit */}
           <Button type="submit" className="w-full cursor-pointer" disabled={isSubmitting}>
             {isSubmitting ? "Creating account..." : "Create Account"}
           </Button>
+
+          {/* Sign In Link */}
+          <p className="text-center text-xs text-muted-foreground">
+            Already have an account?{" "}
+            <Link
+              to="/signin"
+              onClick={() => onOpenChange(false)}
+              className="font-medium text-primary hover:underline"
+            >
+              Log in
+            </Link>
+          </p>
         </form>
       </DialogContent>
     </Dialog>

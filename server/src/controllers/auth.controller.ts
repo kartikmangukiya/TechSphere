@@ -243,3 +243,62 @@ export const updateProfile = asyncHandler(
   },
 );
 
+// =========================
+// Forgot / Reset Password
+// =========================
+export const forgotPassword = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+      throw new ApiError(400, "Email and new password are required", {
+        code: "MISSING_REQUIRED_FIELDS",
+      });
+    }
+
+    if (typeof newPassword !== "string" || newPassword.length < 6) {
+      throw new ApiError(400, "Password must be at least 6 characters long", {
+        code: "INVALID_PASSWORD_LENGTH",
+      });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+      throw new ApiError(404, "No account found with this email address", {
+        code: "USER_NOT_FOUND",
+      });
+    }
+
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+    if (isSamePassword) {
+      throw new ApiError(
+        400,
+        "New password cannot be the same as your old password",
+        {
+          code: "SAME_PASSWORD",
+        },
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.status(200).json(
+      apiResponse(
+        {
+          email: user.email,
+        },
+        {
+          message:
+            "Password reset successfully. You can now log in with your new password.",
+        },
+      ),
+    );
+  },
+);
+
+export const resetPassword = forgotPassword;
+

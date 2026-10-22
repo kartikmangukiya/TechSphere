@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  forgotPassword,
   getCurrentUser,
   loginUser,
   logoutUser,
@@ -14,6 +15,8 @@ export const router = Router();
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", forgotPassword);
 router.get("/me", authMiddleware, getCurrentUser);
 router.patch(
   "/profile",
