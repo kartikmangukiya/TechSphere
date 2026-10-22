@@ -151,12 +151,9 @@ export const Home = () => {
               </CardContent>
             </Card>
           )}
-
-        
         </div>
       </section>
 
-      {/* Newsletter */}
       <section className="py-16">
         <div className="container mx-auto px-4">
           <Card className="mx-auto max-w-4xl">
