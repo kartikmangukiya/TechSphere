@@ -4,45 +4,25 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { NavLink } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { getAllBlogs, type Blog } from "@/api/axios";
+import { BlogCard, BlogCardSkeleton } from "@/components/blog/BlogCard";
 
-const featuredPosts = [
-  {
-    title: "Building Modern React Applications with TypeScript",
-    description:
-      "Learn how to build scalable React applications using TypeScript, modern patterns, and reusable components.",
-    category: "React",
-    date: "Sep 24, 2026",
-    readTime: "8 min read",
-  },
-  {
-    title: "Angular 20: Understanding Signals",
-    description:
-      "A practical guide to signals, computed values, effects, and modern Angular development.",
-    category: "Angular",
-    date: "Sep 22, 2026",
-    readTime: "6 min read",
-  },
-  {
-    title: "Building APIs with Node.js and TypeScript",
-    description:
-      "Create maintainable backend applications using Node.js, Express, TypeScript, and MongoDB.",
-    category: "Node.js",
-    date: "Sep 20, 2026",
-    readTime: "10 min read",
-  },
-];
 export const Home = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth();
+
+  const { data: blogs = [], isPending } = useQuery<Blog[], Error>({
+    queryKey: ["blogs"],
+    queryFn: getAllBlogs,
+  });
+
+  const latestBlogs = blogs.slice(0, 3);
 
   const handleStartWriting = () => {
     if (isLoading) return;
@@ -55,6 +35,7 @@ export const Home = () => {
 
     navigate("/create-blog");
   };
+
   return (
     <main>
       {/* Hero */}
@@ -84,7 +65,12 @@ export const Home = () => {
                 </NavLink>
               </Button>
 
-              <Button className="cursor-pointer " size="lg" variant="outline" onClick={handleStartWriting}>
+              <Button
+                className="cursor-pointer"
+                size="lg"
+                variant="outline"
+                onClick={handleStartWriting}
+              >
                 Start Writing
               </Button>
             </div>
@@ -106,74 +92,72 @@ export const Home = () => {
           </div>
         </div>
       </section>
-      {/* Featured Posts */}
-      <section className="py-16 md:py-20">
-        <div className="container mx-auto px-4">
-          <div className="mb-10 flex items-end justify-between">
+
+      {/* 3 Blogs Section */}
+      <section className="py-16 md:py-24 border-b">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section Header */}
+          <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-primary">FEATURED</p>
-              <h2 className="mt-2 text-3xl font-bold tracking-tight">
-                Featured Articles
+              <Badge variant="secondary" className="mb-2">
+                FEATURED ARTICLES
+              </Badge>
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Latest From Tech<span className="text-primary">Sphere</span>
               </h2>
               <p className="mt-2 text-muted-foreground">
-                Hand-picked articles to help you grow as a developer.
+                Discover developer-focused insights, tutorials, and deep dives.
               </p>
             </div>
-            <Button variant="ghost" className="hidden sm:flex">
-              <NavLink
-                to={"/blogs"}
-                className="inline-flex items-center whitespace-nowrap"
-              >
-                {" "}
-                View all <ArrowRight className="ml-2 h-4 w-4" />
-              </NavLink>
-            </Button>
+
+            <Link
+              to="/blogs"
+              className="hidden sm:inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline transition-colors"
+            >
+              View all articles
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {featuredPosts.map((post) => (
-              <Card
-                key={post.title}
-                className="group transition-shadow hover:shadow-md"
-              >
-                <div className="aspect-video rounded-t-xl bg-muted" />
-                <CardHeader>
-                  <Badge className="w-fit">{post.category}</Badge>
-                  <CardTitle className="mt-2 transition-colors group-hover:text-primary">
-                    {post.title}
-                  </CardTitle>
-                  <CardDescription> {post.description} </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>{post.date}</span> <span>{post.readTime}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+
+          {/* Blogs Grid */}
+          {isPending ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <BlogCardSkeleton key={index} />
+              ))}
+            </div>
+          ) : latestBlogs.length > 0 ? (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {latestBlogs.map((blog) => (
+                <BlogCard key={blog._id} blog={blog} />
+              ))}
+            </div>
+          ) : (
+            <Card className="rounded-xl border border-dashed p-8 text-center">
+              <CardContent className="space-y-3">
+                <p className="text-base font-medium text-foreground">
+                  No articles found yet
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Be the first one to share your story on TechSphere!
+                </p>
+                <Button
+                  onClick={handleStartWriting}
+                  className="mt-2 cursor-pointer"
+                >
+                  Create First Article
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+        
         </div>
       </section>
-      {/* Categories */}
-      <section className="border-y bg-muted/30 py-16 md:py-20">
-        <div className="container mx-auto px-4"></div>
-      </section>
-      {/* Latest Articles */}
-      <section className="py-16 md:py-20">
-        <div className="container mx-auto px-4">
-          <div className="mb-10">
-            <p className="text-sm font-medium text-primary"> LATEST </p>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight">
-              Latest Articles
-            </h2>
-            <p className="mt-2 text-muted-foreground">
-              Fresh ideas, tutorials, and insights from the TechSphere
-              community.
-            </p>
-          </div>
-        </div>
-      </section>
+
       {/* Newsletter */}
-      <section className="border-t py-16">
+      <section className="py-16">
         <div className="container mx-auto px-4">
           <Card className="mx-auto max-w-4xl">
             <CardContent className="flex flex-col items-center gap-6 p-8 text-center md:p-12">
