@@ -19,6 +19,7 @@ import { loginUser } from "@/api/axios";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { getErrorMessage } from "@/lib/formatters";
+import { toast } from "sonner";
 
 const loginSchema = z.object({
   email: z.string().trim().email("Enter a valid email address"),
@@ -76,11 +77,14 @@ export const LoginForm = ({
 
       // Immediately update the Navbar
       setUser(user);
+      toast.success("Logged in successfully!");
 
       // Navigate after login
       navigate("/");
     } catch (error) {
-      setErrorMessage(getErrorMessage(error));
+      const message = getErrorMessage(error);
+      setErrorMessage(message);
+      toast.error(message);
     }
   };
 

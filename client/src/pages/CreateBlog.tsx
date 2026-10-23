@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/card";
 import { API } from "@/api/axios";
 import { getErrorMessage } from "@/lib/formatters";
+import { toast } from "sonner";
 
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -116,12 +117,18 @@ export const CreateBlog = () => {
       const response = await API.post("/blogs", formData);
 
       console.log("Blog created successfully:", response.data);
+      toast.success(
+        data.status === "published"
+          ? "Blog published successfully!"
+          : "Blog saved as draft successfully!",
+      );
       form.reset();
       navigate("/blogs");
     } catch (error: unknown) {
       console.error("Failed to create blog:", error);
       const message = getErrorMessage(error);
       form.setError("root.serverError", { message });
+      toast.error(message);
     }
   };
 

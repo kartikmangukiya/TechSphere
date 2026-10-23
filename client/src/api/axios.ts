@@ -110,10 +110,10 @@ export const updateProfile = async (
   data:
     | FormData
     | {
-        name?: string;
-        email?: string;
-        removeProfileImage?: boolean | string;
-      },
+      name?: string;
+      email?: string;
+      removeProfileImage?: boolean | string;
+    },
 ): Promise<AuthUser> => {
   const response = await API.patch<ApiResponse<AuthUser>>(
     "/auth/profile",
@@ -268,4 +268,20 @@ export const deleteBlogComment = async (
     ApiResponse<{ commentId: string; deleted: boolean }>
   >(`/blogs/${blogId}/comments/${commentId}`);
   return response.data.data;
+};
+
+export interface SubscribeResponse {
+  success: boolean;
+  message: string;
+}
+
+export const subscribeEmail = async (
+  email: string,
+): Promise<SubscribeResponse> => {
+  const response = await API.post<SubscribeResponse>(
+    "/subscribe",
+    { email },
+  );
+
+  return response.data;
 };

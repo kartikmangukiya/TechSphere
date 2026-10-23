@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { forgotPassword } from "@/api/axios";
 import { getErrorMessage } from "@/lib/formatters";
+import { toast } from "sonner";
 
 const forgotPasswordSchema = z
   .object({
@@ -91,6 +92,7 @@ export const ForgotPasswordForm = ({
       });
 
       setSuccessMessage("Password reset successfully! Redirecting to login...");
+      toast.success("Password reset successfully!");
 
       setTimeout(() => {
         if (onSuccess) {
@@ -100,7 +102,9 @@ export const ForgotPasswordForm = ({
         }
       }, 1200);
     } catch (error) {
-      setErrorMessage(getErrorMessage(error));
+      const message = getErrorMessage(error);
+      setErrorMessage(message);
+      toast.error(message);
     }
   };
 

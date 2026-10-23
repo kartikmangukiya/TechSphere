@@ -1,12 +1,12 @@
-import { ArrowRight, Mail, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import SubscribeForm from "@/components/blog/SubscribeForm";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
@@ -154,28 +154,7 @@ export const Home = () => {
         </div>
       </section>
 
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <Card className="mx-auto max-w-4xl">
-            <CardContent className="flex flex-col items-center gap-6 p-8 text-center md:p-12">
-              <div className="rounded-full bg-primary/10 p-3">
-                <Mail className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold"> Stay in the loop </h2>
-                <p className="mt-2 text-muted-foreground">
-                  Get the latest developer articles and technology insights
-                  directly in your inbox.
-                </p>
-              </div>
-              <div className="flex w-full max-w-md flex-col gap-2 sm:flex-row">
-                <Input type="email" placeholder="Enter your email" />
-                <Button> Subscribe </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+      <SubscribeForm />
     </main>
   );
 };

@@ -15,6 +15,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 import { useAuth } from "@/context/AuthContext";
 import { logoutUser } from "@/api/axios";
+import { toast } from "sonner";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -38,9 +39,11 @@ export function Header() {
     try {
       await logoutUser();
       setUser(null);
+      toast.success("Logged out successfully!");
       navigate("/");
     } catch {
       setLogoutError("Unable to log out. Please try again.");
+      toast.error("Unable to log out. Please try again.");
     } finally {
       setIsLoggingOut(false);
     }

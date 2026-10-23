@@ -19,6 +19,7 @@ import { registerUser } from "@/api/axios";
 import { useAuth } from "@/context/AuthContext";
 import { getErrorMessage } from "@/lib/formatters";
 import { useNavigate, Link } from "react-router-dom";
+import { toast } from "sonner";
 
 const registerSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters"),
@@ -66,11 +67,14 @@ export const RegisterForm = ({ open, onOpenChange }: RegisterFormProps) => {
       const user = await registerUser(values);
 
       setUser(user);
+      toast.success("Account created successfully!");
       reset();
       onOpenChange(false);
       navigate("/");
     } catch (error) {
-      setErrorMessage(getErrorMessage(error));
+      const message = getErrorMessage(error);
+      setErrorMessage(message);
+      toast.error(message);
     }
   }
 
