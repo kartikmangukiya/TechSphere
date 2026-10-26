@@ -193,20 +193,34 @@ export const getAllBlogs = asyncHandler(async (req: Request, res: Response) => {
   const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50);
   const skip = (page - 1) * limit;
 
-  const { search } = req.query;
+  const { search, tag, category } = req.query;
 
   const filter: Record<string, unknown> = {
     status: "published",
   };
 
-  // Search blogs
-  if (search && typeof search === "string" && search.trim()) {
-    filter.$text = {
-      $search: search.trim(),
-    };
+  // Filter by tag or category
+  const selectedTag = (tag || category) as string | undefined;
+  if (
+    selectedTag &&
+    typeof selectedTag === "string" &&
+    selectedTag.trim() &&
+    selectedTag.trim().toLowerCase() !== "all"
+  ) {
+    filter.tags = selectedTag.trim().toLowerCase();
   }
 
-  const [blogs, totalBlogs] = await Promise.all([
+  // Search blogs across title, description, and tags
+  if (search && typeof search === "string" && search.trim()) {
+    const query = search.trim();
+    filter.$or = [
+      { title: { $regex: query, $options: "i" } },
+      { description: { $regex: query, $options: "i" } },
+      { tags: { $regex: query, $options: "i" } },
+    ];
+  }
+
+  const [blogs, totalBlogs, allTags] = await Promise.all([
     Blog.find(filter)
       .populate({
         path: "author",
@@ -218,6 +232,8 @@ export const getAllBlogs = asyncHandler(async (req: Request, res: Response) => {
       .lean(),
 
     Blog.countDocuments(filter),
+
+    Blog.distinct("tags", { status: "published" }),
   ]);
 
   const totalPages = Math.ceil(totalBlogs / limit);
@@ -226,6 +242,9 @@ export const getAllBlogs = asyncHandler(async (req: Request, res: Response) => {
     apiResponse(
       {
         blogs,
+        tags: allTags.filter(
+          (t): t is string => typeof t === "string" && Boolean(t.trim()),
+        ),
         pagination: {
           currentPage: page,
           totalPages,

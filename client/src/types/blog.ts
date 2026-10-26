@@ -21,12 +21,37 @@ export interface Blog {
   updatedAt?: string;
 }
 
+export interface BlogPagination {
+  currentPage: number;
+  totalPages: number;
+  totalBlogs: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
 export interface BlogListData {
   blogs: Blog[];
+  tags?: string[];
+  pagination?: BlogPagination;
   total?: number;
   page?: number;
   limit?: number;
   totalPages?: number;
+}
+
+export interface BlogFilterParams {
+  search?: string;
+  tag?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface GetAllBlogsResult {
+  blogs: Blog[];
+  tags: string[];
+  total?: number;
+  pagination?: BlogPagination;
 }
 
 export interface BlogLikeSummary {

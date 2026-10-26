@@ -17,11 +17,12 @@ export const Home = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useAuth();
 
-  const { data: blogs = [], isPending } = useQuery<Blog[], Error>({
+  const { data, isPending } = useQuery({
     queryKey: ["blogs"],
-    queryFn: getAllBlogs,
+    queryFn: () => getAllBlogs(),
   });
 
+  const blogs = data?.blogs ?? [];
   const latestBlogs = blogs.slice(0, 3);
 
   const handleStartWriting = () => {

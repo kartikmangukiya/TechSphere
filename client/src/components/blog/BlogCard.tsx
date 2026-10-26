@@ -46,9 +46,18 @@ export const BlogCard = ({ blog }: { blog: Blog }) => {
           )}
 
           {blog.tags?.slice(0, 2).map((tag) => (
-            <Badge key={tag} variant="outline">
-              {tag}
-            </Badge>
+            <Link
+              key={tag}
+              to={`/blogs?tag=${encodeURIComponent(tag)}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Badge
+                variant="outline"
+                className="cursor-pointer transition-colors hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
+              >
+                #{tag}
+              </Badge>
+            </Link>
           ))}
         </div>
 

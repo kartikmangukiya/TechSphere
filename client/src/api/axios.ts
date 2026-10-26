@@ -33,9 +33,11 @@ export type {
   BlogAuthor,
   BlogComment,
   BlogCommentsResponse,
+  BlogFilterParams,
   BlogLikeSummary,
   BlogListData,
   BlogStatus,
+  GetAllBlogsResult,
   MyBlogsResponse,
   UserBlogsStats,
 };
@@ -145,16 +147,25 @@ export const createBlog = async (
   return response.data;
 };
 
-export const getAllBlogs = async (): Promise<Blog[]> => {
-  const response = await API.get<ApiResponse<Blog[] | BlogListData>>("/blogs");
+export const getAllBlogs = async (
+  params?: BlogFilterParams,
+): Promise<GetAllBlogsResult> => {
+  const response = await API.get<ApiResponse<Blog[] | BlogListData>>("/blogs", {
+    params,
+  });
   const result = response.data.data;
 
-  // Support APIs returning either an array or { blogs: [...] }
+  // Support APIs returning either an array or { blogs: [...], tags: [...] }
   if (Array.isArray(result)) {
-    return result;
+    return { blogs: result, tags: [] };
   }
 
-  return result.blogs;
+  return {
+    blogs: result.blogs || [],
+    tags: result.tags || [],
+    total: result.pagination?.totalBlogs ?? result.total ?? result.blogs?.length,
+    pagination: result.pagination,
+  };
 };
 
 export const getMyBlogs = async (
