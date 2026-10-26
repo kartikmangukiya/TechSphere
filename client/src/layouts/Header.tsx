@@ -16,6 +16,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/context/AuthContext";
 import { logoutUser } from "@/api/axios";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -179,11 +180,15 @@ export function Header() {
           ))}
         </nav>
 
-        {/* Desktop Authentication Actions */}
-        <div className="hidden items-center gap-3 md:flex">{authActions}</div>
+        {/* Desktop Actions */}
+        <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle />
+          {authActions}
+        </div>
 
-        {/* Mobile Menu */}
-        <div className="md:hidden">
+        {/* Mobile Actions */}
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
           <Sheet>
             <SheetTrigger
               render={
