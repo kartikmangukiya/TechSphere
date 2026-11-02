@@ -8,6 +8,7 @@ import {
   notFoundHandler,
 } from "./src/middlewares/error.middleware.js";
 import subscribeRouter from "./src/routes/subscribe.routes.js";
+import { router as userRouter } from "./src/routes/user.routes.js";
 
 export const app = express();
 
@@ -44,6 +45,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/blogs", blogRouter);
 app.use("/api/v1/subscribe", subscribeRouter);
+app.use("/api/v1/users", userRouter);
 
 // Global Error Handlers
 app.use(notFoundHandler);

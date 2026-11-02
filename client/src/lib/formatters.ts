@@ -68,3 +68,34 @@ export const getErrorMessage = (error: unknown): string => {
 
   return "Something went wrong. Please try again.";
 };
+
+/**
+ * Calculates reading time in minutes based on ~200 words per minute.
+ */
+export const calculateReadingTime = (
+  content?: string,
+  description?: string,
+  fallbackTime?: number,
+): number => {
+  if (fallbackTime && fallbackTime > 0) {
+    return fallbackTime;
+  }
+  const text = `${description || ""} ${content || ""}`.trim();
+  if (!text) return 1;
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.ceil(wordCount / 200));
+};
+
+/**
+ * Formats view count into a compact string (e.g. 1.2k, 3.4M).
+ */
+export const formatViews = (views?: number): string => {
+  if (!views || views <= 0) return "0";
+  if (views >= 1_000_000) {
+    return `${(views / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  }
+  if (views >= 1_000) {
+    return `${(views / 1_000).toFixed(1).replace(/\.0$/, "")}k`;
+  }
+  return views.toLocaleString();
+};

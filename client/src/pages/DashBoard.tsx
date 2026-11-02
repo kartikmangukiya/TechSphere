@@ -9,6 +9,7 @@ import {
   Pencil,
   Clock,
   CheckCircle2,
+  Eye,
   FileEdit,
   BookOpen,
   MoreHorizontal,
@@ -60,7 +61,12 @@ import {
   type Blog,
   type BlogStatus,
 } from "@/api/axios";
-import { formatDate, getErrorMessage } from "@/lib/formatters";
+import {
+  calculateReadingTime,
+  formatDate,
+  formatViews,
+  getErrorMessage,
+} from "@/lib/formatters";
 
 type FilterStatus = "all" | "published" | "draft";
 
@@ -78,6 +84,12 @@ export const Dashboard = () => {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [profileName, setProfileName] = useState(user?.name ?? "");
   const [profileEmail, setProfileEmail] = useState(user?.email ?? "");
+  const [profileHeadline, setProfileHeadline] = useState(user?.headline ?? "");
+  const [profileBio, setProfileBio] = useState(user?.bio ?? "");
+  const [profileWebsite, setProfileWebsite] = useState(user?.website ?? "");
+  const [profileGithub, setProfileGithub] = useState(user?.github ?? "");
+  const [profileTwitter, setProfileTwitter] = useState(user?.twitter ?? "");
+  const [profileLinkedin, setProfileLinkedin] = useState(user?.linkedin ?? "");
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(
     user?.profileImage || null,
   );
@@ -106,6 +118,12 @@ export const Dashboard = () => {
     if (user) {
       setProfileName(user.name);
       setProfileEmail(user.email);
+      setProfileHeadline(user.headline || "");
+      setProfileBio(user.bio || "");
+      setProfileWebsite(user.website || "");
+      setProfileGithub(user.github || "");
+      setProfileTwitter(user.twitter || "");
+      setProfileLinkedin(user.linkedin || "");
       setProfileImagePreview(user.profileImage || null);
       setProfileImageFile(null);
       setIsRemovingImage(false);
@@ -135,7 +153,12 @@ export const Dashboard = () => {
   });
 
   const blogs = myBlogsData?.blogs ?? [];
-  const stats = myBlogsData?.stats ?? { total: 0, published: 0, drafts: 0 };
+  const stats = myBlogsData?.stats ?? {
+    total: 0,
+    published: 0,
+    drafts: 0,
+    totalViews: 0,
+  };
 
   // Profile Initials
   const userInitials = (profileName || user?.name || "User")
@@ -198,6 +221,12 @@ export const Dashboard = () => {
   const handleOpenEditProfile = () => {
     setProfileName(user?.name ?? "");
     setProfileEmail(user?.email ?? "");
+    setProfileHeadline(user?.headline ?? "");
+    setProfileBio(user?.bio ?? "");
+    setProfileWebsite(user?.website ?? "");
+    setProfileGithub(user?.github ?? "");
+    setProfileTwitter(user?.twitter ?? "");
+    setProfileLinkedin(user?.linkedin ?? "");
     setProfileImagePreview(user?.profileImage || null);
     setProfileImageFile(null);
     setIsRemovingImage(false);
@@ -229,6 +258,12 @@ export const Dashboard = () => {
     const formData = new FormData();
     formData.append("name", profileName.trim());
     formData.append("email", profileEmail.trim());
+    formData.append("headline", profileHeadline.trim());
+    formData.append("bio", profileBio.trim());
+    formData.append("website", profileWebsite.trim());
+    formData.append("github", profileGithub.trim());
+    formData.append("twitter", profileTwitter.trim());
+    formData.append("linkedin", profileLinkedin.trim());
 
     if (profileImageFile) {
       formData.append("profileImage", profileImageFile);
@@ -422,11 +457,17 @@ export const Dashboard = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setIsViewProfileOpen(true)}
+                onClick={() => {
+                  if (user?.id) {
+                    navigate(`/authors/${user.id}`);
+                  } else {
+                    setIsViewProfileOpen(true);
+                  }
+                }}
                 className="cursor-pointer"
               >
                 <UserRound className="mr-2 h-4 w-4" />
-                View Profile
+                Public Profile
               </Button>
 
               <Button
@@ -450,7 +491,7 @@ export const Dashboard = () => {
             </p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {/* Total Blogs */}
             <Card
               className={`cursor-pointer transition-all hover:border-primary/50 hover:shadow-sm ${
@@ -522,6 +563,26 @@ export const Dashboard = () => {
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Work in progress (private)
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Total Views */}
+            <Card className="transition-all hover:border-violet-500/50 hover:shadow-sm">
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Total Views
+                  </p>
+                  <div className="rounded-lg bg-violet-500/10 p-2 text-violet-600 dark:text-violet-400">
+                    <Eye className="h-4 w-4" />
+                  </div>
+                </div>
+                <p className="mt-3 text-3xl font-bold tracking-tight text-violet-600 dark:text-violet-400">
+                  {isBlogsLoading ? "..." : (stats.totalViews ?? 0).toLocaleString()}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Across all published articles
                 </p>
               </CardContent>
             </Card>
@@ -795,10 +856,19 @@ export const Dashboard = () => {
                         </p>
                       </div>
 
-                      <div className="mt-4 flex items-center justify-between border-t pt-3 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1.5">
-                          <Clock className="h-3.5 w-3.5" />
-                          <span>Updated {formatDate(article.updatedAt || article.createdAt)}</span>
+                      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="flex items-center gap-1" title="Total views">
+                            <Eye className="h-3.5 w-3.5" />
+                            {formatViews(article.views)}
+                          </span>
+                          <span className="flex items-center gap-1" title="Estimated reading time">
+                            <Clock className="h-3.5 w-3.5" />
+                            {calculateReadingTime(article.content, article.description, article.readingTime)}m
+                          </span>
+                          <span className="hidden sm:inline">
+                            Updated {formatDate(article.updatedAt || article.createdAt)}
+                          </span>
                         </div>
 
                         <button
@@ -1092,11 +1162,11 @@ export const Dashboard = () => {
         {/* EDIT PROFILE DIALOG */}
         {/* ======================================================== */}
         <Dialog open={isEditProfileOpen} onOpenChange={setIsEditProfileOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
             <DialogHeader>
               <DialogTitle>Edit Profile</DialogTitle>
               <DialogDescription>
-                Update your display name and email address.
+                Customize your author profile, bio, and social links visible to readers.
               </DialogDescription>
             </DialogHeader>
 
@@ -1177,28 +1247,100 @@ export const Dashboard = () => {
                 />
               </div>
 
-              {/* Name */}
+              {/* Name & Email in 2 cols */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="profile-name">Display Name</Label>
+                  <Input
+                    id="profile-name"
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    placeholder="Enter your name"
+                    maxLength={50}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profile-email">Email Address</Label>
+                  <Input
+                    id="profile-email"
+                    type="email"
+                    value={profileEmail}
+                    onChange={(e) => setProfileEmail(e.target.value)}
+                    placeholder="Enter your email"
+                  />
+                </div>
+              </div>
+
+              {/* Professional Headline */}
               <div className="space-y-2">
-                <Label htmlFor="profile-name">Display Name</Label>
+                <Label htmlFor="profile-headline">Professional Headline</Label>
                 <Input
-                  id="profile-name"
-                  value={profileName}
-                  onChange={(e) => setProfileName(e.target.value)}
-                  placeholder="Enter your name"
-                  maxLength={50}
+                  id="profile-headline"
+                  value={profileHeadline}
+                  onChange={(e) => setProfileHeadline(e.target.value)}
+                  placeholder="e.g. Senior Full-Stack Engineer · Tech Writer"
+                  maxLength={100}
                 />
               </div>
 
-              {/* Email */}
+              {/* Bio / About */}
               <div className="space-y-2">
-                <Label htmlFor="profile-email">Email Address</Label>
-                <Input
-                  id="profile-email"
-                  type="email"
-                  value={profileEmail}
-                  onChange={(e) => setProfileEmail(e.target.value)}
-                  placeholder="Enter your email"
+                <Label htmlFor="profile-bio">About / Bio</Label>
+                <Textarea
+                  id="profile-bio"
+                  value={profileBio}
+                  onChange={(e) => setProfileBio(e.target.value)}
+                  placeholder="Write a brief intro about yourself and what you write about..."
+                  rows={3}
+                  maxLength={500}
                 />
+                <p className="text-right text-xs text-muted-foreground">
+                  {profileBio.length}/500
+                </p>
+              </div>
+
+              {/* Social Links */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="profile-website">Website URL</Label>
+                  <Input
+                    id="profile-website"
+                    value={profileWebsite}
+                    onChange={(e) => setProfileWebsite(e.target.value)}
+                    placeholder="https://yourportfolio.com"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profile-github">GitHub Username or URL</Label>
+                  <Input
+                    id="profile-github"
+                    value={profileGithub}
+                    onChange={(e) => setProfileGithub(e.target.value)}
+                    placeholder="username"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profile-twitter">Twitter / X</Label>
+                  <Input
+                    id="profile-twitter"
+                    value={profileTwitter}
+                    onChange={(e) => setProfileTwitter(e.target.value)}
+                    placeholder="@username"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="profile-linkedin">LinkedIn Profile</Label>
+                  <Input
+                    id="profile-linkedin"
+                    value={profileLinkedin}
+                    onChange={(e) => setProfileLinkedin(e.target.value)}
+                    placeholder="in/username"
+                  />
+                </div>
               </div>
             </div>
 

@@ -10,6 +10,8 @@ export interface IBlog extends Document {
   featuredImage: string | null;
   status: BlogStatus;
   author: Types.ObjectId;
+  views: number;
+  readingTime: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -56,9 +58,28 @@ const blogSchema = new Schema<IBlog>(
       ref: "User",
       required: [true, "Blog author is required"],
     },
+    views: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    readingTime: {
+      type: Number,
+      default: 1,
+      min: 1,
+    },
   },
   { timestamps: true },
 );
+
+// Pre-save hook to automatically calculate reading time (approx 200 wpm)
+blogSchema.pre("save", function () {
+  if (this.isModified("content") || this.isModified("description") || !this.readingTime) {
+    const text = `${this.description || ""} ${this.content || ""}`.trim();
+    const wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
+    this.readingTime = Math.max(1, Math.ceil(wordCount / 200));
+  }
+});
 
 blogSchema.index({ author: 1 });
 blogSchema.index({ status: 1 });

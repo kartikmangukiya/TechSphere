@@ -8,6 +8,8 @@ import {
 import {
   ArrowLeft,
   Calendar,
+  Clock,
+  Eye,
   Heart,
   LogIn,
   MessageCircle,
@@ -32,7 +34,9 @@ import type {
   BlogLikeSummary,
 } from "@/types/blog";
 import {
+  calculateReadingTime,
   formatDate,
+  formatViews,
   getAuthorName,
   getErrorMessage,
 } from "@/lib/formatters";
@@ -324,12 +328,25 @@ export const SingalBlog = () => {
           </p>
         )}
 
-        {/* Author and date */}
+        {/* Author, date, reading time, and views */}
         <div className="mt-6 flex flex-wrap items-center gap-5 border-b pb-6 text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <UserRound size={18} />
-            <span>{getAuthorName(blog.author)}</span>
-          </div>
+          {typeof blog.author === "object" &&
+          (blog.author?._id || blog.author?.id) ? (
+            <Link
+              to={`/authors/${blog.author._id || blog.author.id}`}
+              className="flex items-center gap-2 hover:text-primary transition-colors cursor-pointer group"
+            >
+              <UserRound size={18} />
+              <span className="group-hover:underline font-medium">
+                {getAuthorName(blog.author)}
+              </span>
+            </Link>
+          ) : (
+            <div className="flex items-center gap-2">
+              <UserRound size={18} />
+              <span>{getAuthorName(blog.author)}</span>
+            </div>
+          )}
 
           <div className="flex items-center gap-2">
             <Calendar size={18} />
@@ -337,6 +354,20 @@ export const SingalBlog = () => {
             <time dateTime={blog.createdAt || undefined}>
               {formatDate(blog.createdAt)}
             </time>
+          </div>
+
+          <div className="flex items-center gap-2" title="Estimated reading time">
+            <Clock size={18} />
+            <span>
+              {calculateReadingTime(blog.content, blog.description, blog.readingTime)} min read
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2" title="Total views">
+            <Eye size={18} />
+            <span>
+              {formatViews(blog.views)} {blog.views === 1 ? "view" : "views"}
+            </span>
           </div>
         </div>
 
@@ -399,6 +430,63 @@ export const SingalBlog = () => {
           </div>
         </div>
       </article>
+
+      {/* About the Author Card */}
+      {typeof blog.author === "object" &&
+        (blog.author?._id || blog.author?.id) && (
+          <div className="mt-10 rounded-2xl border bg-muted/30 p-6 sm:p-8">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
+              <Link
+                to={`/authors/${blog.author._id || blog.author.id}`}
+                className="shrink-0"
+              >
+                <div className="h-16 w-16 rounded-full overflow-hidden bg-primary/10 border-2 border-border flex items-center justify-center text-primary font-bold text-xl">
+                  {blog.author.profileImage ? (
+                    <img
+                      src={blog.author.profileImage}
+                      alt={getAuthorName(blog.author)}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    getAuthorName(blog.author).slice(0, 2).toUpperCase()
+                  )}
+                </div>
+              </Link>
+
+              <div className="flex-1 text-center sm:text-left space-y-1">
+                <span className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                  Written by
+                </span>
+                <h3 className="text-lg font-bold">
+                  <Link
+                    to={`/authors/${blog.author._id || blog.author.id}`}
+                    className="hover:text-primary transition-colors hover:underline"
+                  >
+                    {getAuthorName(blog.author)}
+                  </Link>
+                </h3>
+                {blog.author.headline && (
+                  <p className="text-xs text-primary font-medium">
+                    {blog.author.headline}
+                  </p>
+                )}
+                {blog.author.bio && (
+                  <p className="text-sm text-muted-foreground line-clamp-3 pt-1">
+                    {blog.author.bio}
+                  </p>
+                )}
+              </div>
+
+              <Link
+                to={`/authors/${blog.author._id || blog.author.id}`}
+                className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border bg-background px-4 py-2 text-xs font-semibold shadow-xs hover:bg-muted transition-colors cursor-pointer"
+              >
+                <UserRound size={14} />
+                View Profile
+              </Link>
+            </div>
+          </div>
+        )}
 
       {/* Error message */}
       {errorMessage && (

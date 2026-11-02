@@ -1,6 +1,8 @@
 import axios from "axios";
 import type {
   ApiResponse,
+  AuthorProfileData,
+  AuthorStats,
   Blog,
   BlogAuthor,
   BlogComment,
@@ -31,6 +33,8 @@ API.interceptors.request.use((config) => {
 // Re-export shared types for convenience
 export type {
   ApiResponse,
+  AuthorProfileData,
+  AuthorStats,
   Blog,
   BlogAuthor,
   BlogComment,
@@ -49,6 +53,12 @@ export interface AuthUser {
   name: string;
   email: string;
   profileImage?: string;
+  bio?: string;
+  headline?: string;
+  website?: string;
+  github?: string;
+  twitter?: string;
+  linkedin?: string;
   token?: string;
 }
 
@@ -116,6 +126,12 @@ export const updateProfile = async (
     | {
       name?: string;
       email?: string;
+      bio?: string;
+      headline?: string;
+      website?: string;
+      github?: string;
+      twitter?: string;
+      linkedin?: string;
       removeProfileImage?: boolean | string;
     },
 ): Promise<AuthUser> => {
@@ -297,4 +313,16 @@ export const subscribeEmail = async (
   );
 
   return response.data;
+};
+
+// =========================
+// Author Profile API
+// =========================
+export const getAuthorProfile = async (
+  authorId: string,
+): Promise<AuthorProfileData> => {
+  const response = await API.get<ApiResponse<AuthorProfileData>>(
+    `/users/${authorId}/profile`,
+  );
+  return response.data.data;
 };

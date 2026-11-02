@@ -1,5 +1,6 @@
 import { Blog } from "../models/Blog.model.js";
 import type { Request, Response } from "express";
+import { Types } from "mongoose";
 import { ApiError } from "../utils/ApiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -58,6 +59,10 @@ export const createBlog = asyncHandler(async (req: Request, res: Response) => {
     );
   }
 
+  const text = `${description || ""} ${content || ""}`.trim();
+  const wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
+  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+
   const blog = await Blog.create({
     title: String(title).trim(),
     description: String(description).trim(),
@@ -66,6 +71,8 @@ export const createBlog = asyncHandler(async (req: Request, res: Response) => {
     featuredImage,
     status: status === "published" ? "published" : "draft",
     author: userId,
+    readingTime,
+    views: 0,
   });
 
   const populatedBlog = await blog.populate({
@@ -285,12 +292,19 @@ export const getMyBlogs = asyncHandler(async (req: Request, res: Response) => {
     ];
   }
 
-  const [blogs, totalBlogs, publishedBlogs, draftBlogs] = await Promise.all([
-    Blog.find(filter).sort({ updatedAt: -1 }).lean(),
-    Blog.countDocuments({ author: userId }),
-    Blog.countDocuments({ author: userId, status: "published" }),
-    Blog.countDocuments({ author: userId, status: "draft" }),
-  ]);
+  const [blogs, totalBlogs, publishedBlogs, draftBlogs, totalViewsAggregate] =
+    await Promise.all([
+      Blog.find(filter).sort({ updatedAt: -1 }).lean(),
+      Blog.countDocuments({ author: userId }),
+      Blog.countDocuments({ author: userId, status: "published" }),
+      Blog.countDocuments({ author: userId, status: "draft" }),
+      Blog.aggregate<{ totalViews: number }>([
+        { $match: { author: new Types.ObjectId(userId) } },
+        { $group: { _id: null, totalViews: { $sum: "$views" } } },
+      ]),
+    ]);
+
+  const totalViews = totalViewsAggregate[0]?.totalViews ?? 0;
 
   return res.status(200).json(
     apiResponse(
@@ -300,6 +314,7 @@ export const getMyBlogs = asyncHandler(async (req: Request, res: Response) => {
           total: totalBlogs,
           published: publishedBlogs,
           drafts: draftBlogs,
+          totalViews,
         },
       },
       {
@@ -340,6 +355,29 @@ export const getBlogById = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(404, "Blog not found", {
       code: "BLOG_NOT_FOUND",
     });
+  }
+
+  // Increment view count atomically for readers on published blogs
+  if (blog.status === "published" && !isAuthor) {
+    const updatedBlog = await Blog.findByIdAndUpdate(
+      id,
+      { $inc: { views: 1 } },
+      { new: true },
+    )
+      .populate({
+        path: "author",
+        select: "name email profileImage",
+      })
+      .lean();
+
+    if (updatedBlog) {
+      return res.status(200).json(
+        apiResponse(updatedBlog, {
+          message: "Blog fetched successfully",
+          statusCode: 200,
+        }),
+      );
+    }
   }
 
   return res.status(200).json(

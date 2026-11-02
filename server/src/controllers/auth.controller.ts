@@ -163,6 +163,12 @@ export const getCurrentUser = asyncHandler(
           name: user.name,
           email: user.email,
           profileImage: user.profileImage || "",
+          bio: user.bio || "",
+          headline: user.headline || "",
+          website: user.website || "",
+          github: user.github || "",
+          twitter: user.twitter || "",
+          linkedin: user.linkedin || "",
         },
         {
           message: "Current user fetched successfully",
@@ -185,7 +191,17 @@ export const updateProfile = asyncHandler(
       });
     }
 
-    const { name, email, removeProfileImage } = req.body;
+    const {
+      name,
+      email,
+      bio,
+      headline,
+      website,
+      github,
+      twitter,
+      linkedin,
+      removeProfileImage,
+    } = req.body;
 
     const user = await User.findById(userId);
 
@@ -199,7 +215,12 @@ export const updateProfile = asyncHandler(
       user.name = name.trim();
     }
 
-    if (email && typeof email === "string" && email.trim() && email.trim().toLowerCase() !== user.email) {
+    if (
+      email &&
+      typeof email === "string" &&
+      email.trim() &&
+      email.trim().toLowerCase() !== user.email
+    ) {
       const existingUser = await User.findOne({
         email: email.trim().toLowerCase(),
         _id: { $ne: user._id },
@@ -212,6 +233,25 @@ export const updateProfile = asyncHandler(
       }
 
       user.email = email.trim().toLowerCase();
+    }
+
+    if (bio !== undefined) {
+      user.bio = typeof bio === "string" ? bio.trim() : "";
+    }
+    if (headline !== undefined) {
+      user.headline = typeof headline === "string" ? headline.trim() : "";
+    }
+    if (website !== undefined) {
+      user.website = typeof website === "string" ? website.trim() : "";
+    }
+    if (github !== undefined) {
+      user.github = typeof github === "string" ? github.trim() : "";
+    }
+    if (twitter !== undefined) {
+      user.twitter = typeof twitter === "string" ? twitter.trim() : "";
+    }
+    if (linkedin !== undefined) {
+      user.linkedin = typeof linkedin === "string" ? linkedin.trim() : "";
     }
 
     // Handle profile photo upload or removal
@@ -234,6 +274,12 @@ export const updateProfile = asyncHandler(
           name: user.name,
           email: user.email,
           profileImage: user.profileImage || "",
+          bio: user.bio || "",
+          headline: user.headline || "",
+          website: user.website || "",
+          github: user.github || "",
+          twitter: user.twitter || "",
+          linkedin: user.linkedin || "",
         },
         {
           message: "Profile updated successfully",

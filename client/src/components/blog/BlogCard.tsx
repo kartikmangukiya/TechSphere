@@ -1,5 +1,5 @@
 import { Link, NavLink } from "react-router-dom";
-import { ArrowRight, CalendarDays, UserRound } from "lucide-react";
+import { ArrowRight, CalendarDays, Clock, Eye, UserRound } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,7 +12,12 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Blog } from "@/api/axios";
-import { formatDate, getAuthorName } from "@/lib/formatters";
+import {
+  calculateReadingTime,
+  formatDate,
+  formatViews,
+  getAuthorName,
+} from "@/lib/formatters";
 
 // Shared Blog card component
 export const BlogCard = ({ blog }: { blog: Blog }) => {
@@ -74,14 +79,36 @@ export const BlogCard = ({ blog }: { blog: Blog }) => {
 
       <CardContent className="mt-auto">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <UserRound className="size-4" />
-            {getAuthorName(blog.author)}
-          </span>
+          {typeof blog.author === "object" &&
+          (blog.author?._id || blog.author?.id) ? (
+            <Link
+              to={`/authors/${blog.author._id || blog.author.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer"
+            >
+              <UserRound className="size-4" />
+              <span className="hover:underline">{getAuthorName(blog.author)}</span>
+            </Link>
+          ) : (
+            <span className="flex items-center gap-1.5">
+              <UserRound className="size-4" />
+              <span>{getAuthorName(blog.author)}</span>
+            </span>
+          )}
 
           <span className="flex items-center gap-1.5">
             <CalendarDays className="size-4" />
             {formatDate(blog.createdAt)}
+          </span>
+
+          <span className="flex items-center gap-1.5" title="Estimated reading time">
+            <Clock className="size-3.5" />
+            {calculateReadingTime(blog.content, blog.description, blog.readingTime)} min read
+          </span>
+
+          <span className="flex items-center gap-1.5" title="Views">
+            <Eye className="size-3.5" />
+            {formatViews(blog.views)}
           </span>
         </div>
       </CardContent>

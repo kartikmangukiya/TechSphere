@@ -6,6 +6,24 @@ export interface BlogAuthor {
   name: string;
   email?: string;
   profileImage?: string;
+  bio?: string;
+  headline?: string;
+  website?: string;
+  github?: string;
+  twitter?: string;
+  linkedin?: string;
+  createdAt?: string;
+}
+
+export interface AuthorStats {
+  totalBlogs: number;
+  totalViews: number;
+}
+
+export interface AuthorProfileData {
+  author: BlogAuthor;
+  stats: AuthorStats;
+  blogs: Blog[];
 }
 
 export interface Blog {
@@ -17,6 +35,8 @@ export interface Blog {
   tags?: string[];
   featuredImage?: string | null;
   status?: BlogStatus;
+  views?: number;
+  readingTime?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -84,6 +104,7 @@ export interface UserBlogsStats {
   total: number;
   published: number;
   drafts: number;
+  totalViews?: number;
 }
 
 export interface MyBlogsResponse {
