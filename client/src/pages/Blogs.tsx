@@ -286,7 +286,7 @@ export const Blogs = () => {
                 <Button onClick={handleResetAll} variant="default" size="sm">
                   Clear all filters
                 </Button>
-                <Button asChild variant="outline" size="sm">
+                <Button variant="outline" size="sm">
                   <Link to="/create-blog">Write an article</Link>
                 </Button>
               </div>

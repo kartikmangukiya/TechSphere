@@ -10,7 +10,7 @@ import SubscribeForm from "@/components/blog/SubscribeForm";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
-import { getAllBlogs, type Blog } from "@/api/axios";
+import { getAllBlogs } from "@/api/axios";
 import { BlogCard, BlogCardSkeleton } from "@/components/blog/BlogCard";
 
 export const Home = () => {

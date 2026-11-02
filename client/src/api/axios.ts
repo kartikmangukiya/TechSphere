@@ -5,9 +5,11 @@ import type {
   BlogAuthor,
   BlogComment,
   BlogCommentsResponse,
+  BlogFilterParams,
   BlogLikeSummary,
   BlogListData,
   BlogStatus,
+  GetAllBlogsResult,
   MyBlogsResponse,
   UserBlogsStats,
 } from "@/types/blog";
