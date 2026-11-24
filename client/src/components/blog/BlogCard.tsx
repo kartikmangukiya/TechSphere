@@ -38,12 +38,12 @@ export const BlogCard = ({ blog }: { blog: Blog }) => {
         ) : (
           <div className="flex h-52 items-center justify-center bg-muted">
             <span className="text-sm text-muted-foreground">
-              No featured image
+              No any Feature Image
             </span>
           </div>
         )}
       </Link>
-
+ 
       <CardHeader className="space-y-3">
         <div className="flex flex-wrap gap-2">
           {blog.status === "published" && (
